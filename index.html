@@ -11,6 +11,7 @@
 <meta name="theme-color" content="#1F2A24">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap');
+  :root { --text-scale: 1; }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   body {
@@ -29,92 +30,109 @@
     display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap;
     gap: 12px; max-width: 1100px; margin: 0 auto 18px; border-bottom: 1px solid #DDE1D6; padding-bottom: 16px;
   }
-  .eyebrow { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 1.2px; text-transform: uppercase; color: #6B7A6D; margin-bottom: 6px; }
-  h1 { font-family: 'Fraunces', serif; font-weight: 600; font-size: 34px; margin: 0; color: #1F2A24; }
-  .header-sub { font-size: 13px; color: #5C6B5F; margin-top: 6px; }
+  .eyebrow { font-family: 'IBM Plex Mono', monospace; font-size: calc(11px * var(--text-scale)); letter-spacing: 1.2px; text-transform: uppercase; color: #6B7A6D; margin-bottom: 6px; }
+  h1 { font-family: 'Fraunces', serif; font-weight: 600; font-size: calc(34px * var(--text-scale)); margin: 0; color: #1F2A24; }
+  .header-sub { font-size: calc(13px * var(--text-scale)); color: #5C6B5F; margin-top: 6px; }
   .today-badge { background: #1F2A24; color: #F3F1E8; border-radius: 10px; padding: 10px 16px; min-width: 180px; }
-  .today-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 1px; opacity: .7; }
-  .today-date { font-size: 14px; font-weight: 600; margin-top: 2px; }
+  .text-size-toggle { display: flex; align-items: center; gap: 2px; background: #fff; border: 1px solid #CDD3C4; border-radius: 999px; padding: 3px; }
+  .text-size-btn { border: none; background: transparent; color: #232A24; border-radius: 999px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-family: 'Fraunces', serif; font-weight: 700; -webkit-appearance: none; appearance: none; }
+  .text-size-btn:first-child { font-size: 15px; }
+  .text-size-btn:last-child { font-size: 20px; }
+  .text-size-btn:disabled { opacity: .3; }
+  .text-size-pct { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #5C6B5F; min-width: 38px; text-align: center; }
+  .today-label { font-family: 'IBM Plex Mono', monospace; font-size: calc(10px * var(--text-scale)); letter-spacing: 1px; opacity: .7; }
+  .today-date { font-size: calc(14px * var(--text-scale)); font-weight: 600; margin-top: 2px; }
 
-  .sync-bar { max-width: 1100px; margin: 0 auto 12px; background: #E9F0EA; color: #2F5D50; border-radius: 8px; padding: 8px 14px; font-size: 12.5px; }
-  .err-bar { max-width: 1100px; margin: 0 auto 12px; background: #FBE9E7; color: #8B3A2B; border-radius: 8px; padding: 8px 14px; font-size: 12.5px; }
+  .sync-bar { max-width: 1100px; margin: 0 auto 12px; background: #E9F0EA; color: #2F5D50; border-radius: 8px; padding: 8px 14px; font-size: calc(12.5px * var(--text-scale)); }
+  .err-bar { max-width: 1100px; margin: 0 auto 12px; background: #FBE9E7; color: #8B3A2B; border-radius: 8px; padding: 8px 14px; font-size: calc(12.5px * var(--text-scale)); }
 
   .tabs { display: flex; gap: 8px; max-width: 1100px; margin: 0 auto 12px; flex-wrap: wrap; }
   .tab-btn { border: 1px solid #DDE1D6; background: #fff; border-radius: 10px; padding: 10px 14px; text-align: left; color: #232A24; line-height: 1.3; min-height: 44px; -webkit-appearance: none; appearance: none; }
   .tab-btn.active { background: #1F2A24; color: #F3F1E8; border-color: #1F2A24; }
-  .tab-btn-sub { font-family: 'IBM Plex Mono', monospace; font-size: 10px; opacity: .65; }
+  .tab-btn-sub { font-family: 'IBM Plex Mono', monospace; font-size: calc(10px * var(--text-scale)); opacity: .65; }
 
   .month-tabs { display: flex; gap: 8px; max-width: 1100px; margin: 0 auto 16px; flex-wrap: wrap; }
-  .month-btn { border: 1px solid #CDD3C4; background: transparent; border-radius: 999px; padding: 10px 16px; font-size: 12px; font-family: 'IBM Plex Mono', monospace; color: #5C6B5F; min-height: 40px; -webkit-appearance: none; appearance: none; }
+  .month-btn { border: 1px solid #CDD3C4; background: transparent; border-radius: 999px; padding: 10px 16px; font-size: calc(12px * var(--text-scale)); font-family: 'IBM Plex Mono', monospace; color: #5C6B5F; min-height: 40px; -webkit-appearance: none; appearance: none; }
   .month-btn.active { background: #C98A2B; color: #fff; border-color: #C98A2B; }
 
   main { max-width: 1100px; margin: 0 auto; }
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
-  .empty-state { color: #5C6B5F; font-size: 14px; padding: 24px 4px; }
+  .empty-state { color: #5C6B5F; font-size: calc(14px * var(--text-scale)); padding: 24px 4px; }
 
   .card { position: relative; background: #fff; border-radius: 12px; border-top: 3px solid; box-shadow: 0 1px 2px rgba(31,42,36,.06), 0 6px 16px rgba(31,42,36,.04); padding: 16px 16px 14px; border: 1px solid #ECEEE7; border-top-width: 3px; }
   .card.clickable { cursor: pointer; }
   .pin { position: absolute; top: 10px; right: 12px; width: 8px; height: 8px; border-radius: 50%; }
   .card-header-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; padding-right: 14px; }
-  .card-title { font-family: 'Fraunces', serif; font-weight: 600; font-size: 17px; margin-bottom: 4px; padding-right: 14px; }
-  .card-title-faint { font-style: italic; color: #A6AB9C; margin-bottom: 4px; font-size: 14px; }
-  .card-sub { font-size: 12px; color: #5C6B5F; margin-bottom: 8px; }
+  .card-title { font-family: 'Fraunces', serif; font-weight: 600; font-size: calc(17px * var(--text-scale)); margin-bottom: 4px; padding-right: 14px; }
+  .card-title-faint { font-style: italic; color: #A6AB9C; margin-bottom: 4px; font-size: calc(14px * var(--text-scale)); }
+  .card-sub { font-size: calc(12px * var(--text-scale)); color: #5C6B5F; margin-bottom: 8px; }
   .card-foot { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px; }
-  .cat-label { font-size: 11px; color: #8A8F82; margin-bottom: 4px; }
+  .cat-label { font-size: calc(11px * var(--text-scale)); color: #8A8F82; margin-bottom: 4px; }
   .sub-faint { color: #A6AB9C; }
 
-  .date-stamp { font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 12px; background: #1F2A24; color: #F3F1E8; border-radius: 6px; padding: 3px 8px; }
-  .rel-badge { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: #fff; border-radius: 6px; padding: 3px 8px; }
-  .day-tag { font-size: 12px; color: #5C6B5F; }
-  .time-tag { font-family: 'IBM Plex Mono', monospace; font-size: 11px; background: #F3F1E8; border: 1px solid #E4E1D3; border-radius: 6px; padding: 3px 7px; }
-  .num-tag { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #8A8F82; }
-  .person-tag { font-size: 12px; background: #EEF0EA; border-radius: 999px; padding: 3px 10px; font-weight: 500; display: inline-block; }
-  .role-label { font-size: 11px; color: #8A8F82; }
-  .areas-text { font-size: 12px; color: #5C6B5F; white-space: pre-line; background: #F7F8F4; border-radius: 8px; padding: 8px 10px; margin-top: 6px; line-height: 1.5; }
+  .date-stamp { font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: calc(12px * var(--text-scale)); background: #1F2A24; color: #F3F1E8; border-radius: 6px; padding: 3px 8px; }
+  .rel-badge { font-family: 'IBM Plex Mono', monospace; font-size: calc(10px * var(--text-scale)); color: #fff; border-radius: 6px; padding: 3px 8px; }
+  .day-tag { font-size: calc(12px * var(--text-scale)); color: #5C6B5F; }
+  .time-tag { font-family: 'IBM Plex Mono', monospace; font-size: calc(11px * var(--text-scale)); background: #F3F1E8; border: 1px solid #E4E1D3; border-radius: 6px; padding: 3px 7px; }
+  .num-tag { font-family: 'IBM Plex Mono', monospace; font-size: calc(11px * var(--text-scale)); color: #8A8F82; }
+  .person-tag { font-size: calc(12px * var(--text-scale)); background: #EEF0EA; border-radius: 999px; padding: 3px 10px; font-weight: 500; display: inline-block; }
+  .role-label { font-size: calc(11px * var(--text-scale)); color: #8A8F82; }
+  .areas-text { font-size: calc(12px * var(--text-scale)); color: #5C6B5F; white-space: pre-line; background: #F7F8F4; border-radius: 8px; padding: 8px 10px; margin-top: 6px; line-height: 1.5; }
   .area-link { color: #3E6598; text-decoration: underline; text-decoration-color: #3E659888; font-weight: 600; }
   .area-link:hover { text-decoration-color: #3E6598; }
-  .jp-text { font-size: 12px; color: #8A8F82; margin-bottom: 4px; }
-  .note-text { font-size: 12px; color: #8A8F82; margin-top: 8px; font-style: italic; }
-  .map-link { font-size: 12px; color: #3E6598; text-decoration: none; font-weight: 600; display: inline-block; margin-bottom: 6px; }
+  .jp-text { font-size: calc(12px * var(--text-scale)); color: #8A8F82; margin-bottom: 4px; }
+  .note-text { font-size: calc(12px * var(--text-scale)); color: #8A8F82; margin-top: 8px; font-style: italic; }
+  .map-link { font-size: calc(12px * var(--text-scale)); color: #3E6598; text-decoration: none; font-weight: 600; display: inline-block; margin-bottom: 6px; }
 
   .role-grid { display: flex; flex-wrap: wrap; gap: 8px 14px; margin-top: 10px; }
   .role-item { display: flex; flex-direction: column; gap: 3px; }
 
-  .special-banner { background: #F6F1E2; color: #8B6F1F; border-radius: 8px; padding: 10px 12px; font-weight: 600; font-size: 14px; }
-  .expand-hint { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #8B6F1F; margin-top: 4px; }
+  .special-banner { background: #F6F1E2; color: #8B6F1F; border-radius: 8px; padding: 10px 12px; font-weight: 600; font-size: calc(14px * var(--text-scale)); }
+  .expand-hint { font-family: 'IBM Plex Mono', monospace; font-size: calc(11px * var(--text-scale)); color: #8B6F1F; margin-top: 4px; }
   .agenda { margin-top: 12px; border-top: 1px dashed #E4E1D3; padding-top: 10px; display: flex; flex-direction: column; gap: 6px; }
-  .agenda-row, .agenda-section { display: flex; align-items: baseline; gap: 8px; font-size: 12.5px; }
+  .agenda-row, .agenda-section { display: flex; align-items: baseline; gap: 8px; font-size: calc(12.5px * var(--text-scale)); }
   .agenda-section { margin-top: 8px; }
-  .agenda-time { font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; color: #A6AB9C; min-width: 40px; }
+  .agenda-time { font-family: 'IBM Plex Mono', monospace; font-size: calc(10.5px * var(--text-scale)); color: #A6AB9C; min-width: 40px; }
   .agenda-text { flex: 1; color: #3A423B; }
   .agenda-section-text { flex: 1; color: #8B6F1F; font-weight: 700; }
-  .agenda-assignee { font-size: 11px; color: #5C6B5F; font-weight: 600; white-space: nowrap; }
+  .agenda-assignee { font-size: calc(11px * var(--text-scale)); color: #5C6B5F; font-weight: 600; white-space: nowrap; }
 
-  .cat-chip { font-size: 11px; font-weight: 600; border-radius: 999px; padding: 3px 10px; display: inline-block; margin-bottom: 8px; }
+  .cat-chip { font-size: calc(11px * var(--text-scale)); font-weight: 600; border-radius: 999px; padding: 3px 10px; display: inline-block; margin-bottom: 8px; }
+
+  /* Life & Ministry — text sized 20% larger than other sections
+     for easier reading, per request. */
+  .lm-card .date-stamp { font-size: calc(14.4px * var(--text-scale)); }
+  .lm-card .role-label { font-size: calc(13.2px * var(--text-scale)); }
+  .lm-card .person-tag { font-size: calc(14.4px * var(--text-scale)); }
+  .lm-card .special-banner { font-size: calc(16.8px * var(--text-scale)); }
+  .lm-card .expand-hint { font-size: calc(13.2px * var(--text-scale)); }
+  .lm-card .agenda-row, .lm-card .agenda-section { font-size: calc(15px * var(--text-scale)); }
+  .lm-card .agenda-time { font-size: calc(12.6px * var(--text-scale)); }
+  .lm-card .agenda-assignee { font-size: calc(13.2px * var(--text-scale)); }
 
   .modal-backdrop { position: fixed; inset: 0; background: rgba(31,42,36,.45); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 50; }
   .modal { background: #fff; border-radius: 16px; padding: 24px; max-width: 480px; width: 100%; position: relative; max-height: 80vh; overflow-y: auto; }
-  .modal-close { position: absolute; top: 14px; right: 14px; border: none; background: #F3F1E8; border-radius: 50%; width: 36px; height: 36px; font-size: 15px; -webkit-appearance: none; appearance: none; }
-  .modal-date { font-size: 12px; color: #8A8F82; margin-bottom: 6px; font-family: 'IBM Plex Mono', monospace; }
-  .modal-title { font-family: 'Fraunces', serif; font-size: 22px; margin: 0 0 8px; }
-  .modal-sub { font-size: 13px; color: #5C6B5F; margin-bottom: 10px; }
+  .modal-close { position: absolute; top: 14px; right: 14px; border: none; background: #F3F1E8; border-radius: 50%; width: 36px; height: 36px; font-size: calc(15px * var(--text-scale)); -webkit-appearance: none; appearance: none; }
+  .modal-date { font-size: calc(12px * var(--text-scale)); color: #8A8F82; margin-bottom: 6px; font-family: 'IBM Plex Mono', monospace; }
+  .modal-title { font-family: 'Fraunces', serif; font-size: calc(22px * var(--text-scale)); margin: 0 0 8px; }
+  .modal-sub { font-size: calc(13px * var(--text-scale)); color: #5C6B5F; margin-bottom: 10px; }
   .hidden { display: none !important; }
 
   /* Sign-in gate */
   #signinScreen { max-width: 420px; margin: 18vh auto 0; text-align: center; padding: 0 16px; }
-  #signinScreen h1 { font-size: 26px; margin-bottom: 6px; }
-  #signinScreen p { font-size: 13.5px; color: #5C6B5F; margin-bottom: 22px; line-height: 1.6; }
+  #signinScreen h1 { font-size: calc(26px * var(--text-scale)); margin-bottom: 6px; }
+  #signinScreen p { font-size: calc(13.5px * var(--text-scale)); color: #5C6B5F; margin-bottom: 22px; line-height: 1.6; }
   #signinBtnHolder { display: flex; justify-content: center; }
-  #signinError { margin-top: 18px; font-size: 13px; color: #8B3A2B; background: #FBE9E7; border-radius: 8px; padding: 10px 14px; display: none; }
-  #signinLoading { font-size: 13px; color: #5C6B5F; margin-top: 14px; display: none; }
+  #signinError { margin-top: 18px; font-size: calc(13px * var(--text-scale)); color: #8B3A2B; background: #FBE9E7; border-radius: 8px; padding: 10px 14px; display: none; }
+  #signinLoading { font-size: calc(13px * var(--text-scale)); color: #5C6B5F; margin-top: 14px; display: none; }
   #appRoot { display: none; }
 
-  footer { max-width: 1100px; margin: 30px auto 0; text-align: center; font-size: 12px; color: #A6AB9C; padding-bottom: 8px; }
+  footer { max-width: 1100px; margin: 30px auto 0; text-align: center; font-size: calc(12px * var(--text-scale)); color: #A6AB9C; padding-bottom: 8px; }
 
   @media (max-width: 480px) {
     body { padding-left: max(12px, env(safe-area-inset-left)); padding-right: max(12px, env(safe-area-inset-right)); }
     .header { flex-direction: column; align-items: flex-start; }
-    h1 { font-size: 26px; }
+    h1 { font-size: calc(26px * var(--text-scale)); }
     .today-badge { width: 100%; }
     .tabs { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 4px; scrollbar-width: none; }
     .tabs::-webkit-scrollbar { display: none; }
@@ -125,62 +143,73 @@
     .grid { grid-template-columns: 1fr; }
     .modal { max-height: 85vh; padding: 20px; }
   }
-  
+
   /* iPad / laptop / desktop — scale everything up a notch.
      700px comfortably covers iPad portrait (~744px+) through
      desktop, while phone widths (even landscape, ~430-480px)
      stay below it. Phone styles above are untouched. */
   @media (min-width: 700px) {
-    body { font-size: 17px; }
+    body { font-size: calc(17px * var(--text-scale)); }
     .header, .sync-bar, .err-bar, .tabs, .month-tabs, main, footer { max-width: 1320px; }
-    h1 { font-size: 42px; }
-    .eyebrow { font-size: 13px; }
-    .header-sub { font-size: 15px; }
+    h1 { font-size: calc(42px * var(--text-scale)); }
+    .eyebrow { font-size: calc(13px * var(--text-scale)); }
+    .header-sub { font-size: calc(15px * var(--text-scale)); }
     .today-badge { padding: 14px 20px; min-width: 220px; }
-    .today-label { font-size: 11px; }
-    .today-date { font-size: 16px; }
-    .sync-bar, .err-bar { font-size: 14px; padding: 10px 18px; }
+    .today-label { font-size: calc(11px * var(--text-scale)); }
+    .today-date { font-size: calc(16px * var(--text-scale)); }
+    .sync-bar, .err-bar { font-size: calc(14px * var(--text-scale)); padding: 10px 18px; }
 
-    .tab-btn { padding: 12px 20px; font-size: 15px; }
-    .tab-btn-sub { font-size: 11.5px; }
-    .month-btn { padding: 11px 20px; font-size: 14px; }
+    .tab-btn { padding: 12px 20px; font-size: calc(15px * var(--text-scale)); }
+    .tab-btn-sub { font-size: calc(11.5px * var(--text-scale)); }
+    .month-btn { padding: 11px 20px; font-size: calc(14px * var(--text-scale)); }
 
     .grid { grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 18px; }
     .card { padding: 20px 20px 18px; border-radius: 14px; }
-    .card-title { font-size: 20px; }
-    .card-title-faint { font-size: 16px; }
-    .card-sub { font-size: 14px; }
-    .cat-label { font-size: 12.5px; }
-    .empty-state { font-size: 16px; }
+    .card-title { font-size: calc(20px * var(--text-scale)); }
+    .card-title-faint { font-size: calc(16px * var(--text-scale)); }
+    .card-sub { font-size: calc(14px * var(--text-scale)); }
+    .cat-label { font-size: calc(12.5px * var(--text-scale)); }
+    .empty-state { font-size: calc(16px * var(--text-scale)); }
 
-    .date-stamp { font-size: 13.5px; padding: 4px 10px; }
-    .rel-badge { font-size: 11.5px; padding: 4px 10px; }
-    .day-tag { font-size: 13.5px; }
-    .time-tag { font-size: 12.5px; padding: 4px 9px; }
-    .num-tag { font-size: 12.5px; }
-    .person-tag { font-size: 13.5px; padding: 4px 12px; }
-    .role-label { font-size: 12.5px; }
-    .areas-text { font-size: 14px; padding: 10px 12px; }
-    .jp-text { font-size: 13.5px; }
-    .note-text { font-size: 13.5px; }
-    .map-link { font-size: 13.5px; }
+    .date-stamp { font-size: calc(13.5px * var(--text-scale)); padding: 4px 10px; }
+    .rel-badge { font-size: calc(11.5px * var(--text-scale)); padding: 4px 10px; }
+    .day-tag { font-size: calc(13.5px * var(--text-scale)); }
+    .time-tag { font-size: calc(12.5px * var(--text-scale)); padding: 4px 9px; }
+    .num-tag { font-size: calc(12.5px * var(--text-scale)); }
+    .person-tag { font-size: calc(13.5px * var(--text-scale)); padding: 4px 12px; }
+    .role-label { font-size: calc(12.5px * var(--text-scale)); }
+    .areas-text { font-size: calc(14px * var(--text-scale)); padding: 10px 12px; }
+    .jp-text { font-size: calc(13.5px * var(--text-scale)); }
+    .note-text { font-size: calc(13.5px * var(--text-scale)); }
+    .map-link { font-size: calc(13.5px * var(--text-scale)); }
 
-    .special-banner { font-size: 15.5px; padding: 12px 14px; }
-    .expand-hint { font-size: 12.5px; }
-    .agenda-row, .agenda-section { font-size: 14px; }
-    .agenda-time { font-size: 12px; min-width: 46px; }
-    .agenda-assignee { font-size: 12.5px; }
+    .special-banner { font-size: calc(15.5px * var(--text-scale)); padding: 12px 14px; }
+    .expand-hint { font-size: calc(12.5px * var(--text-scale)); }
+    .agenda-row, .agenda-section { font-size: calc(14px * var(--text-scale)); }
+    .agenda-time { font-size: calc(12px * var(--text-scale)); min-width: 46px; }
+    .agenda-assignee { font-size: calc(12.5px * var(--text-scale)); }
 
-    .cat-chip { font-size: 12.5px; padding: 4px 12px; }
+    .cat-chip { font-size: calc(12.5px * var(--text-scale)); padding: 4px 12px; }
     .modal { max-width: 560px; padding: 30px; }
-    .modal-title { font-size: 26px; }
-    .modal-sub { font-size: 15px; }
-    .modal-date { font-size: 13.5px; }
+    .modal-title { font-size: calc(26px * var(--text-scale)); }
+    .modal-sub { font-size: calc(15px * var(--text-scale)); }
+    .modal-date { font-size: calc(13.5px * var(--text-scale)); }
 
     #signinScreen { max-width: 480px; }
-    #signinScreen h1 { font-size: 30px; }
-    #signinScreen p { font-size: 15px; }
-    footer { font-size: 13px; }
+    #signinScreen h1 { font-size: calc(30px * var(--text-scale)); }
+    #signinScreen p { font-size: calc(15px * var(--text-scale)); }
+    footer { font-size: calc(13px * var(--text-scale)); }
+
+    /* Life & Ministry — keep the +20% proportionally on top of
+       the tablet/desktop sizes too. */
+    .lm-card .date-stamp { font-size: calc(16.2px * var(--text-scale)); }
+    .lm-card .role-label { font-size: calc(15px * var(--text-scale)); }
+    .lm-card .person-tag { font-size: calc(16.2px * var(--text-scale)); }
+    .lm-card .special-banner { font-size: calc(18.6px * var(--text-scale)); }
+    .lm-card .expand-hint { font-size: calc(15px * var(--text-scale)); }
+    .lm-card .agenda-row, .lm-card .agenda-section { font-size: calc(16.8px * var(--text-scale)); }
+    .lm-card .agenda-time { font-size: calc(14.4px * var(--text-scale)); }
+    .lm-card .agenda-assignee { font-size: calc(15px * var(--text-scale)); }
   }
 </style>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -200,9 +229,16 @@
     <div>
       <h1>मण्डलीको कार्यक्रम</h1>
     </div>
-    <div class="today-badge">
-      <div class="today-label">आज</div>
-      <div class="today-date" id="todayDate"></div>
+    <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+      <div class="text-size-toggle" role="group" aria-label="Text size">
+        <button class="text-size-btn" id="textSizeDown" aria-label="Decrease text size" title="अक्षर सानो पार्नुहोस्">A</button>
+        <span class="text-size-pct" id="textSizePct">100%</span>
+        <button class="text-size-btn" id="textSizeUp" aria-label="Increase text size" title="अक्षर ठूलो पार्नुहोस्">A</button>
+      </div>
+      <div class="today-badge">
+        <div class="today-label">आज</div>
+        <div class="today-date" id="todayDate"></div>
+      </div>
     </div>
   </header>
 
@@ -410,7 +446,7 @@ function lifeMinistryWeekHtml(w, weekKey, expanded) {
   var c = CATS.lifeMinistry;
   if (w.special) {
     return '' +
-      '<div class="card" style="border-top-color:'+c.color+'">' +
+      '<div class="card lm-card" style="border-top-color:'+c.color+'">' +
         pinHtml(c.color) +
         '<div class="card-header-row"><span class="date-stamp">'+esc(w.dateRaw)+' '+esc(w.monthLabel)+'</span></div>' +
         '<div class="special-banner">'+esc(w.special)+'</div>' +
@@ -428,7 +464,7 @@ function lifeMinistryWeekHtml(w, weekKey, expanded) {
     }).join("") + '</div>';
   }
   return '' +
-    '<div class="card clickable" style="border-top-color:'+c.color+'" data-toggle-week="'+weekKey+'">' +
+    '<div class="card lm-card clickable" style="border-top-color:'+c.color+'" data-toggle-week="'+weekKey+'">' +
       pinHtml(c.color) +
       '<div class="card-header-row">' +
         '<span class="date-stamp">'+esc(w.dateRaw)+' '+esc(w.monthLabel)+'</span>' +
@@ -452,6 +488,43 @@ function searchResultCardHtml(r) {
       '<div class="role-grid">'+roleItemHtml(r.role, r.context)+'</div>' +
     '</div>';
 }
+
+/* ---------- Text size toggle ---------- */
+var TEXT_SCALE_MIN = 0.8;
+var TEXT_SCALE_MAX = 1.6;
+var TEXT_SCALE_STEP = 0.1;
+var TEXT_SCALE_KEY = "programDashboardTextScale";
+
+function applyTextScale(scale) {
+  scale = Math.min(TEXT_SCALE_MAX, Math.max(TEXT_SCALE_MIN, scale));
+  document.documentElement.style.setProperty("--text-scale", scale);
+  var pctEl = document.getElementById("textSizePct");
+  if (pctEl) pctEl.textContent = Math.round(scale * 100) + "%";
+  var downBtn = document.getElementById("textSizeDown");
+  var upBtn = document.getElementById("textSizeUp");
+  if (downBtn) downBtn.disabled = scale <= TEXT_SCALE_MIN;
+  if (upBtn) upBtn.disabled = scale >= TEXT_SCALE_MAX;
+  try { localStorage.setItem(TEXT_SCALE_KEY, String(scale)); } catch (_) {}
+  return scale;
+}
+
+function loadTextScale() {
+  var saved = 1;
+  try {
+    var v = parseFloat(localStorage.getItem(TEXT_SCALE_KEY));
+    if (!isNaN(v)) saved = v;
+  } catch (_) {}
+  return applyTextScale(saved);
+}
+
+var currentTextScale = loadTextScale(); // applied immediately, even before sign-in
+
+document.getElementById("textSizeDown").addEventListener("click", function() {
+  currentTextScale = applyTextScale(Math.round((currentTextScale - TEXT_SCALE_STEP) * 10) / 10);
+});
+document.getElementById("textSizeUp").addEventListener("click", function() {
+  currentTextScale = applyTextScale(Math.round((currentTextScale + TEXT_SCALE_STEP) * 10) / 10);
+});
 
 /* ---------- Render ---------- */
 var todayStr = todayIso();
@@ -613,7 +686,6 @@ document.addEventListener("click", function(e) {
   }
 
   if (e.target.id === "modalCloseBtn" || e.target.id === "modalBackdrop") closeModal();
-
 });
 
 document.getElementById("copyrightYear").textContent = new Date().getFullYear();
