@@ -434,8 +434,8 @@ function renderTabs() {
   var defs = [
     ["upcoming","आगामी","Upcoming"],
     ["fieldService",CATS.fieldService.label,CATS.fieldService.sub],
-    ["publicTalks",CATS.publicTalks.label,CATS.publicTalks.sub],
     ["lifeMinistry",CATS.lifeMinistry.label,CATS.lifeMinistry.sub],
+    ["publicTalks",CATS.publicTalks.label,CATS.publicTalks.sub],
   ];
   tabsEl.innerHTML = defs.map(function(d) {
     var active = state.tab === d[0];
