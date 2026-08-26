@@ -125,6 +125,63 @@
     .grid { grid-template-columns: 1fr; }
     .modal { max-height: 85vh; padding: 20px; }
   }
+  
+  /* iPad / laptop / desktop — scale everything up a notch.
+     700px comfortably covers iPad portrait (~744px+) through
+     desktop, while phone widths (even landscape, ~430-480px)
+     stay below it. Phone styles above are untouched. */
+  @media (min-width: 700px) {
+    body { font-size: 17px; }
+    .header, .sync-bar, .err-bar, .tabs, .month-tabs, main, footer { max-width: 1320px; }
+    h1 { font-size: 42px; }
+    .eyebrow { font-size: 13px; }
+    .header-sub { font-size: 15px; }
+    .today-badge { padding: 14px 20px; min-width: 220px; }
+    .today-label { font-size: 11px; }
+    .today-date { font-size: 16px; }
+    .sync-bar, .err-bar { font-size: 14px; padding: 10px 18px; }
+
+    .tab-btn { padding: 12px 20px; font-size: 15px; }
+    .tab-btn-sub { font-size: 11.5px; }
+    .month-btn { padding: 11px 20px; font-size: 14px; }
+
+    .grid { grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 18px; }
+    .card { padding: 20px 20px 18px; border-radius: 14px; }
+    .card-title { font-size: 20px; }
+    .card-title-faint { font-size: 16px; }
+    .card-sub { font-size: 14px; }
+    .cat-label { font-size: 12.5px; }
+    .empty-state { font-size: 16px; }
+
+    .date-stamp { font-size: 13.5px; padding: 4px 10px; }
+    .rel-badge { font-size: 11.5px; padding: 4px 10px; }
+    .day-tag { font-size: 13.5px; }
+    .time-tag { font-size: 12.5px; padding: 4px 9px; }
+    .num-tag { font-size: 12.5px; }
+    .person-tag { font-size: 13.5px; padding: 4px 12px; }
+    .role-label { font-size: 12.5px; }
+    .areas-text { font-size: 14px; padding: 10px 12px; }
+    .jp-text { font-size: 13.5px; }
+    .note-text { font-size: 13.5px; }
+    .map-link { font-size: 13.5px; }
+
+    .special-banner { font-size: 15.5px; padding: 12px 14px; }
+    .expand-hint { font-size: 12.5px; }
+    .agenda-row, .agenda-section { font-size: 14px; }
+    .agenda-time { font-size: 12px; min-width: 46px; }
+    .agenda-assignee { font-size: 12.5px; }
+
+    .cat-chip { font-size: 12.5px; padding: 4px 12px; }
+    .modal { max-width: 560px; padding: 30px; }
+    .modal-title { font-size: 26px; }
+    .modal-sub { font-size: 15px; }
+    .modal-date { font-size: 13.5px; }
+
+    #signinScreen { max-width: 480px; }
+    #signinScreen h1 { font-size: 30px; }
+    #signinScreen p { font-size: 15px; }
+    footer { font-size: 13px; }
+  }
 </style>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
