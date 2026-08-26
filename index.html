@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html>
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="मण्डली कार्यक्रम">
+<meta name="theme-color" content="#1F2A24">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap');
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    font-family: 'Noto Sans Devanagari','Noto Sans JP','Noto Sans',sans-serif;
+    background: #EEF0EA;
+    color: #232A24;
+    padding: max(20px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(40px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  }
+  button { font: inherit; cursor: pointer; }
+  a { color: inherit; }
+  ::-webkit-scrollbar { height: 6px; width: 6px; }
+  ::-webkit-scrollbar-thumb { background: #C9CFC0; border-radius: 4px; }
+
+  .header {
+    display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap;
+    gap: 12px; max-width: 1100px; margin: 0 auto 18px; border-bottom: 1px solid #DDE1D6; padding-bottom: 16px;
+  }
+  .eyebrow { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 1.2px; text-transform: uppercase; color: #6B7A6D; margin-bottom: 6px; }
+  h1 { font-family: 'Fraunces', serif; font-weight: 600; font-size: 34px; margin: 0; color: #1F2A24; }
+  .header-sub { font-size: 13px; color: #5C6B5F; margin-top: 6px; }
+  .today-badge { background: #1F2A24; color: #F3F1E8; border-radius: 10px; padding: 10px 16px; min-width: 180px; }
+  .today-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 1px; opacity: .7; }
+  .today-date { font-size: 14px; font-weight: 600; margin-top: 2px; }
+
+  .sync-bar { max-width: 1100px; margin: 0 auto 12px; background: #E9F0EA; color: #2F5D50; border-radius: 8px; padding: 8px 14px; font-size: 12.5px; }
+  .err-bar { max-width: 1100px; margin: 0 auto 12px; background: #FBE9E7; color: #8B3A2B; border-radius: 8px; padding: 8px 14px; font-size: 12.5px; }
+
+  .search-wrap { max-width: 1100px; margin: 0 auto 14px; }
+  .search-input { width: 100%; padding: 13px 16px; border-radius: 10px; border: 1px solid #CDD3C4; background: #fff; font-size: 16px; font-family: inherit; outline: none; -webkit-appearance: none; appearance: none; }
+
+  .tabs { display: flex; gap: 8px; max-width: 1100px; margin: 0 auto 12px; flex-wrap: wrap; }
+  .tab-btn { border: 1px solid #DDE1D6; background: #fff; border-radius: 10px; padding: 10px 14px; text-align: left; color: #232A24; line-height: 1.3; min-height: 44px; -webkit-appearance: none; appearance: none; }
+  .tab-btn.active { background: #1F2A24; color: #F3F1E8; border-color: #1F2A24; }
+  .tab-btn-sub { font-family: 'IBM Plex Mono', monospace; font-size: 10px; opacity: .65; }
+
+  .month-tabs { display: flex; gap: 8px; max-width: 1100px; margin: 0 auto 16px; flex-wrap: wrap; }
+  .month-btn { border: 1px solid #CDD3C4; background: transparent; border-radius: 999px; padding: 10px 16px; font-size: 12px; font-family: 'IBM Plex Mono', monospace; color: #5C6B5F; min-height: 40px; -webkit-appearance: none; appearance: none; }
+  .month-btn.active { background: #C98A2B; color: #fff; border-color: #C98A2B; }
+
+  main { max-width: 1100px; margin: 0 auto; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+  .empty-state { color: #5C6B5F; font-size: 14px; padding: 24px 4px; }
+
+  .card { position: relative; background: #fff; border-radius: 12px; border-top: 3px solid; box-shadow: 0 1px 2px rgba(31,42,36,.06), 0 6px 16px rgba(31,42,36,.04); padding: 16px 16px 14px; border: 1px solid #ECEEE7; border-top-width: 3px; }
+  .card.clickable { cursor: pointer; }
+  .pin { position: absolute; top: 10px; right: 12px; width: 8px; height: 8px; border-radius: 50%; }
+  .card-header-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; padding-right: 14px; }
+  .card-title { font-family: 'Fraunces', serif; font-weight: 600; font-size: 17px; margin-bottom: 4px; padding-right: 14px; }
+  .card-title-faint { font-style: italic; color: #A6AB9C; margin-bottom: 4px; font-size: 14px; }
+  .card-sub { font-size: 12px; color: #5C6B5F; margin-bottom: 8px; }
+  .card-foot { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px; }
+  .cat-label { font-size: 11px; color: #8A8F82; margin-bottom: 4px; }
+  .sub-faint { color: #A6AB9C; }
+
+  .date-stamp { font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 12px; background: #1F2A24; color: #F3F1E8; border-radius: 6px; padding: 3px 8px; }
+  .rel-badge { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: #fff; border-radius: 6px; padding: 3px 8px; }
+  .day-tag { font-size: 12px; color: #5C6B5F; }
+  .time-tag { font-family: 'IBM Plex Mono', monospace; font-size: 11px; background: #F3F1E8; border: 1px solid #E4E1D3; border-radius: 6px; padding: 3px 7px; }
+  .num-tag { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #8A8F82; }
+  .person-tag { font-size: 12px; background: #EEF0EA; border-radius: 999px; padding: 3px 10px; font-weight: 500; display: inline-block; }
+  .role-label { font-size: 11px; color: #8A8F82; }
+  .areas-text { font-size: 12px; color: #5C6B5F; white-space: pre-line; background: #F7F8F4; border-radius: 8px; padding: 8px 10px; margin-top: 6px; line-height: 1.5; }
+  .area-link { color: #3E6598; text-decoration: underline; text-decoration-color: #3E659888; font-weight: 600; }
+  .area-link:hover { text-decoration-color: #3E6598; }
+  .jp-text { font-size: 12px; color: #8A8F82; margin-bottom: 4px; }
+  .note-text { font-size: 12px; color: #8A8F82; margin-top: 8px; font-style: italic; }
+  .map-link { font-size: 12px; color: #3E6598; text-decoration: none; font-weight: 600; display: inline-block; margin-bottom: 6px; }
+
+  .role-grid { display: flex; flex-wrap: wrap; gap: 8px 14px; margin-top: 10px; }
+  .role-item { display: flex; flex-direction: column; gap: 3px; }
+
+  .special-banner { background: #F6F1E2; color: #8B6F1F; border-radius: 8px; padding: 10px 12px; font-weight: 600; font-size: 14px; }
+  .expand-hint { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #8B6F1F; margin-top: 4px; }
+  .agenda { margin-top: 12px; border-top: 1px dashed #E4E1D3; padding-top: 10px; display: flex; flex-direction: column; gap: 6px; }
+  .agenda-row, .agenda-section { display: flex; align-items: baseline; gap: 8px; font-size: 12.5px; }
+  .agenda-section { margin-top: 8px; }
+  .agenda-time { font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; color: #A6AB9C; min-width: 40px; }
+  .agenda-text { flex: 1; color: #3A423B; }
+  .agenda-section-text { flex: 1; color: #8B6F1F; font-weight: 700; }
+  .agenda-assignee { font-size: 11px; color: #5C6B5F; font-weight: 600; white-space: nowrap; }
+
+  .cat-chip { font-size: 11px; font-weight: 600; border-radius: 999px; padding: 3px 10px; display: inline-block; margin-bottom: 8px; }
+
+  .modal-backdrop { position: fixed; inset: 0; background: rgba(31,42,36,.45); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 50; }
+  .modal { background: #fff; border-radius: 16px; padding: 24px; max-width: 480px; width: 100%; position: relative; max-height: 80vh; overflow-y: auto; }
+  .modal-close { position: absolute; top: 14px; right: 14px; border: none; background: #F3F1E8; border-radius: 50%; width: 36px; height: 36px; font-size: 15px; -webkit-appearance: none; appearance: none; }
+  .modal-date { font-size: 12px; color: #8A8F82; margin-bottom: 6px; font-family: 'IBM Plex Mono', monospace; }
+  .modal-title { font-family: 'Fraunces', serif; font-size: 22px; margin: 0 0 8px; }
+  .modal-sub { font-size: 13px; color: #5C6B5F; margin-bottom: 10px; }
+  .hidden { display: none !important; }
+
+  /* Sign-in gate */
+  #signinScreen { max-width: 420px; margin: 18vh auto 0; text-align: center; padding: 0 16px; }
+  #signinScreen h1 { font-size: 26px; margin-bottom: 6px; }
+  #signinScreen p { font-size: 13.5px; color: #5C6B5F; margin-bottom: 22px; line-height: 1.6; }
+  #signinBtnHolder { display: flex; justify-content: center; }
+  #signinError { margin-top: 18px; font-size: 13px; color: #8B3A2B; background: #FBE9E7; border-radius: 8px; padding: 10px 14px; display: none; }
+  #signinLoading { font-size: 13px; color: #5C6B5F; margin-top: 14px; display: none; }
+  #appRoot { display: none; }
+
+  footer { max-width: 1100px; margin: 30px auto 0; text-align: center; font-size: 12px; color: #A6AB9C; padding-bottom: 8px; }
+
+  @media (max-width: 480px) {
+    body { padding-left: max(12px, env(safe-area-inset-left)); padding-right: max(12px, env(safe-area-inset-right)); }
+    .header { flex-direction: column; align-items: flex-start; }
+    h1 { font-size: 26px; }
+    .today-badge { width: 100%; }
+    .tabs { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 4px; scrollbar-width: none; }
+    .tabs::-webkit-scrollbar { display: none; }
+    .tab-btn { flex: 0 0 auto; }
+    .month-tabs { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+    .month-tabs::-webkit-scrollbar { display: none; }
+    .month-btn { flex: 0 0 auto; }
+    .grid { grid-template-columns: 1fr; }
+    .modal { max-height: 85vh; padding: 20px; }
+  }
+</style>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+
+  <div id="signinScreen">
+    <h1>मण्डलीको कार्यक्रम</h1>
+    <p>यो ड्यासबोर्ड हेर्न आफ्नो Google खाताले साइन इन गर्नुहोस्।<br>Sign in with Google to view this dashboard.</p>
+    <div id="signinBtnHolder"></div>
+    <div id="signinLoading">जाँच गर्दै... checking access...</div>
+    <div id="signinError"></div>
+  </div>
+
+  <div id="appRoot">
+  <header class="header">
+    <div>
+      <h1>मण्डलीको कार्यक्रम</h1>
+    </div>
+    <div class="today-badge">
+      <div class="today-label">आज</div>
+      <div class="today-date" id="todayDate"></div>
+    </div>
+  </header>
+
+  <div class="sync-bar" id="syncBar"></div>
+  <div class="err-bar hidden" id="errBar"></div>
+
+  <div class="search-wrap">
+    <input class="search-input" id="searchInput" placeholder="नाम खोज्नुहोस् — जस्तै: मुरासे, तामाङ, ओओमुरा..." autocorrect="off" autocapitalize="none" spellcheck="false" enterkeyhint="search">
+  </div>
+
+  <nav class="tabs" id="tabs"></nav>
+  <div class="month-tabs hidden" id="monthTabs"></div>
+
+  <main id="main"></main>
+
+  <div class="modal-backdrop hidden" id="modalBackdrop">
+    <div class="modal" id="modalContent"></div>
+  </div>
+
+  <footer>© <span id="copyrightYear"></span> Shinjuku Nepali Congregation</footer>
+  </div>
+
+<script>
+/* ============================================================
+   CONFIG — fill these in
+   ============================================================ */
+// The /exec URL from your Apps Script deployment.
+var APPS_SCRIPT_URL = "PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE";
+// The OAuth Client ID from Google Cloud Console (Credentials >
+// OAuth 2.0 Client IDs > Web application). Must also be pasted
+// into GOOGLE_OAUTH_CLIENT_ID in Code.gs so the backend can
+// verify tokens were issued for this same client.
+var GOOGLE_CLIENT_ID = "PASTE_YOUR_GOOGLE_OAUTH_CLIENT_ID_HERE";
+
+var DATA = null;
+
+var CATS = {
+  fieldService: { label: "क्षेत्र सेवा", sub: "Field Service", color: "#3E6598", tint: "#EAF0F8" },
+  publicTalks: { label: "जनभाषण", sub: "Public Talk", color: "#7C4B6E", tint: "#F4EDF2" },
+  lifeMinistry: { label: "जीवन र सेवा सभा", sub: "Life & Ministry", color: "#8B6F1F", tint: "#F6F1E2" },
+};
+var NEPALI_MONTHS_EN = { "01":"January","02":"February","03":"March","04":"April","05":"May","06":"June","07":"July","08":"August","09":"September","10":"October","11":"November","12":"December" };
+var SECTION_HEADERS = { "बाइबलमा पाइने अनमोल धन":1, "कुराकानी गर्ने सीप तिखारौँ":1, "ख्रीष्टियन जीवन":1 };
+
+var state = { tab: "upcoming", month: null, query: "", expandedWeeks: {}, expandedFS: {}, openItem: null };
+
+function monthLabel(ymKey) {
+  var parts = ymKey.split("-");
+  return (NEPALI_MONTHS_EN[parts[1]] || parts[1]) + " " + parts[0];
+}
+function todayIso() {
+  var d = new Date();
+  return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+}
+function toDateObj(iso) { return new Date(iso + "T00:00:00"); }
+function fmtShort(iso) { return toDateObj(iso).toLocaleDateString("en-US",{month:"short",day:"numeric"}); }
+function fmtFull(iso) { return toDateObj(iso).toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"}); }
+function dayDelta(iso, todayStr) { return Math.round((toDateObj(iso) - toDateObj(todayStr)) / 86400000); }
+function relLabel(iso, todayStr) {
+  var n = dayDelta(iso, todayStr);
+  if (n === 0) return "आज · Today";
+  if (n === 1) return "भोलि · Tomorrow";
+  if (n > 1 && n < 7) return n + " दिनमा · in " + n + " days";
+  return null;
+}
+function esc(str) {
+  if (str === null || str === undefined) return "";
+  return String(str).replace(/[&<>"']/g, function(c) {
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+  });
+}
+// Renders the इलाका (areas) cell, preserving per-line hyperlinks if the
+// spreadsheet has any (e.g. "Okubo①-1" linking to a map). Falls back to
+// plain text when there are no links.
+function areasHtml(entryLike) {
+  if (entryLike.areasLinks && entryLike.areasLinks.length) {
+    return entryLike.areasLinks.map(function(seg, i) {
+      var t = esc(seg.text);
+      var line = seg.url ? '<a class="area-link" href="'+esc(seg.url)+'" target="_blank" rel="noreferrer">'+t+'</a>' : t;
+      return i < entryLike.areasLinks.length - 1 ? line + "\n" : line;
+    }).join("");
+  }
+  return esc(entryLike.areas || "");
+}
+
+/* ---------- Build unified "Upcoming" feed ---------- */
+function buildFeed() {
+  var feed = [];
+  Object.keys(DATA.fieldService || {}).forEach(function(month) {
+    (DATA.fieldService[month] || []).forEach(function(e, i) {
+      if (!e.iso) return;
+      feed.push({ cat:"fieldService", iso:e.iso, key:"fs-"+month+"-"+i, title:e.place || "क्षेत्र सेवा (ठाउँ पछि तोकिनेछ)", subtitle:e.areas, time:e.time, people:[e.conductor].filter(Boolean), raw:e });
+    });
+  });
+  (DATA.publicTalks || []).forEach(function(t, i) {
+    if (!t.iso) return;
+    feed.push({ cat:"publicTalks", iso:t.iso, key:"pt-"+i, title:t.topicNp || (t.otherNote || "जनभाषण"), subtitle:t.topicJp, time:null, people:[t.speaker].filter(Boolean), raw:t });
+  });
+  Object.keys(DATA.lifeMinistry || {}).forEach(function(month) {
+    (DATA.lifeMinistry[month] || []).forEach(function(w, i) {
+      if (!w.iso) return;
+      feed.push({ cat:"lifeMinistry", iso:w.iso, key:"lm-"+month+"-"+i, title:w.special || "हाम्रो ख्रिष्टियन जीवन र सेवा सभा", subtitle: w.chairman ? ("अध्यक्ष: "+w.chairman) : null, time: (w.items && w.items[0]) ? w.items[0].time : null, people:[w.chairman].filter(Boolean), raw:w });
+    });
+  });
+  feed.sort(function(a,b){ return a.iso < b.iso ? -1 : a.iso > b.iso ? 1 : 0; });
+  return feed;
+}
+
+function buildSearchIndex() {
+  var rows = [];
+  Object.keys(DATA.fieldService || {}).forEach(function(m) {
+    (DATA.fieldService[m] || []).forEach(function(e) {
+      if (e.conductor) rows.push({ cat:"fieldService", iso:e.iso, name:e.conductor, role:"संचालक भाइ", context:e.place || e.areas || "क्षेत्र सेवा" });
+    });
+  });
+  (DATA.publicTalks || []).forEach(function(t) {
+    [[t.speaker,"वक्ता"],[t.chairman,"चेयरम्यान"],[t.wtConductor,"प्र.ध.संचालक"],[t.reader,"पढने भाइ"]].forEach(function(pair) {
+      if (pair[0]) rows.push({ cat:"publicTalks", iso:t.iso, name:pair[0], role:pair[1], context:t.topicNp || t.date });
+    });
+  });
+  Object.keys(DATA.lifeMinistry || {}).forEach(function(m) {
+    (DATA.lifeMinistry[m] || []).forEach(function(w) {
+      if (w.chairman) rows.push({ cat:"lifeMinistry", iso:w.iso, name:w.chairman, role:"अध्यक्ष", context:w.special || "साप्ताहिक सभा" });
+      (w.items || []).forEach(function(it) {
+        if (it.assignee) rows.push({ cat:"lifeMinistry", iso:w.iso, name:it.assignee, role:it.text, context:w.special || "साप्ताहिक सभा" });
+      });
+    });
+  });
+  return rows;
+}
+
+/* ---------- HTML builders ---------- */
+function pinHtml(color) {
+  return '<span class="pin" style="background:'+color+';box-shadow:0 0 0 3px '+color+'22"></span>';
+}
+function catChipHtml(cat) {
+  var c = CATS[cat];
+  return '<span class="cat-chip" style="color:'+c.color+';background:'+c.tint+'">'+esc(c.label)+'</span>';
+}
+
+function feedCardHtml(item, todayStr) {
+  var c = CATS[item.cat];
+  var rel = relLabel(item.iso, todayStr);
+  var peopleHtml = item.people.map(function(p){ return '<span class="person-tag">'+esc(p)+'</span>'; }).join("");
+  return '' +
+    '<div class="card clickable" style="border-top-color:'+c.color+'" data-open-item="'+item.key+'">' +
+      pinHtml(c.color) +
+      '<div class="card-header-row" style="justify-content:space-between">' +
+        '<span class="date-stamp">'+esc(fmtShort(item.iso))+'</span>' +
+        (rel ? '<span class="rel-badge" style="background:'+c.color+'">'+esc(rel)+'</span>' : '') +
+      '</div>' +
+      '<div class="cat-label">'+esc(c.label)+' <span class="sub-faint">· '+esc(c.sub)+'</span></div>' +
+      '<div class="card-title">'+esc(item.title)+'</div>' +
+      (item.subtitle ? '<div class="card-sub">'+esc(item.subtitle)+'</div>' : '') +
+      '<div class="card-foot">' + (item.time ? '<span class="time-tag">'+esc(item.time)+'</span>' : '') + peopleHtml + '</div>' +
+    '</div>';
+}
+
+function fieldServiceCardHtml(e, key, expanded) {
+  var c = CATS.fieldService;
+  var detailsHtml = '';
+  if (expanded) {
+    detailsHtml = '<div class="agenda">' +
+      (e.mapLink ? '<a class="map-link" href="'+esc(e.mapLink)+'" target="_blank" rel="noreferrer">नक्सा हेर्नुहोस् ↗</a>' : '') +
+      (e.areas ? '<div class="areas-text">'+areasHtml(e)+'</div>' : '') +
+      (e.conductor ? '<div class="card-foot"><span class="role-label">संचालक भाइ</span><span class="person-tag">'+esc(e.conductor)+'</span></div>' : '') +
+    '</div>';
+  }
+  return '' +
+    '<div class="card clickable" style="border-top-color:'+c.color+'" data-toggle-fs="'+key+'">' +
+      pinHtml(c.color) +
+      '<div class="card-header-row">' +
+        '<span class="date-stamp">'+esc(e.iso ? fmtShort(e.iso) : e.date)+'</span>' +
+        '<span class="day-tag">'+esc(e.day)+'</span>' +
+        (e.time ? '<span class="time-tag">'+esc(e.time.trim())+'</span>' : '') +
+      '</div>' +
+      '<div class="card-title">'+esc(e.place || "ठाउँ पछि तोकिनेछ")+'</div>' +
+      '<div class="expand-hint">'+(expanded ? "विवरण लुकाउनुहोस् ▲" : "विवरण हेर्नुहोस् ▾")+'</div>' +
+      detailsHtml +
+    '</div>';
+}
+
+function roleItemHtml(label, value) {
+  return '<div class="role-item"><span class="role-label">'+esc(label)+'</span><span class="person-tag">'+esc(value)+'</span></div>';
+}
+
+function publicTalkCardHtml(t) {
+  var c = CATS.publicTalks;
+  var roles = '';
+  if (t.speaker) roles += roleItemHtml("वक्ता", t.speaker);
+  if (t.chairman) roles += roleItemHtml("चेयरम्यान", t.chairman);
+  if (t.wtConductor) roles += roleItemHtml("प्र.ध.संचालक", t.wtConductor);
+  if (t.reader) roles += roleItemHtml("पढने भाइ", t.reader);
+  return '' +
+    '<div class="card" style="border-top-color:'+c.color+'">' +
+      pinHtml(c.color) +
+      '<div class="card-header-row">' +
+        '<span class="date-stamp">'+esc(t.date)+'</span>' +
+        (t.no ? '<span class="num-tag">No. '+esc(t.no)+'</span>' : '') +
+      '</div>' +
+      (t.topicNp ? ('<div class="card-title">'+esc(t.topicNp)+'</div>' + (t.topicJp ? '<div class="jp-text">'+esc(t.topicJp)+'</div>' : '')) : '<div class="card-title-faint">विषय तोकिएको छैन</div>') +
+      (t.host ? '<div class="areas-text">अतिथिसत्कार / मण्डली: '+esc(t.host)+'</div>' : '') +
+      '<div class="role-grid">'+roles+'</div>' +
+      (t.otherNote ? '<div class="note-text">'+esc(t.otherNote)+'</div>' : '') +
+    '</div>';
+}
+
+function lifeMinistryWeekHtml(w, weekKey, expanded) {
+  var c = CATS.lifeMinistry;
+  if (w.special) {
+    return '' +
+      '<div class="card" style="border-top-color:'+c.color+'">' +
+        pinHtml(c.color) +
+        '<div class="card-header-row"><span class="date-stamp">'+esc(w.dateRaw)+' '+esc(w.monthLabel)+'</span></div>' +
+        '<div class="special-banner">'+esc(w.special)+'</div>' +
+      '</div>';
+  }
+  var agendaHtml = '';
+  if (expanded) {
+    agendaHtml = '<div class="agenda">' + w.items.map(function(it) {
+      var isHeader = SECTION_HEADERS[(it.text||"").trim()];
+      return '<div class="'+(isHeader?"agenda-section":"agenda-row")+'">' +
+        '<span class="agenda-time">'+esc(it.time||"")+'</span>' +
+        '<span class="'+(isHeader?"agenda-section-text":"agenda-text")+'">'+esc(it.text)+'</span>' +
+        (it.assignee ? '<span class="agenda-assignee">'+esc(it.assignee)+'</span>' : '') +
+      '</div>';
+    }).join("") + '</div>';
+  }
+  return '' +
+    '<div class="card clickable" style="border-top-color:'+c.color+'" data-toggle-week="'+weekKey+'">' +
+      pinHtml(c.color) +
+      '<div class="card-header-row">' +
+        '<span class="date-stamp">'+esc(w.dateRaw)+' '+esc(w.monthLabel)+'</span>' +
+        (w.chairman ? '<span class="role-label">अध्यक्ष</span><span class="person-tag">'+esc(w.chairman)+'</span>' : '') +
+      '</div>' +
+      '<div class="expand-hint">'+(expanded ? "कार्यक्रम लुकाउनुहोस् ▲" : ("पूरा कार्यक्रम हेर्नुहोस् ("+w.items.length+" भाग) ▾"))+'</div>' +
+      agendaHtml +
+    '</div>';
+}
+
+function searchResultCardHtml(r) {
+  var c = CATS[r.cat];
+  return '' +
+    '<div class="card" style="border-top-color:'+c.color+'">' +
+      pinHtml(c.color) +
+      '<div class="card-header-row">' +
+        '<span class="date-stamp">'+esc(r.iso ? fmtShort(r.iso) : "?")+'</span>' +
+        catChipHtml(r.cat) +
+      '</div>' +
+      '<div class="card-title">'+esc(r.name)+'</div>' +
+      '<div class="role-grid">'+roleItemHtml(r.role, r.context)+'</div>' +
+    '</div>';
+}
+
+/* ---------- Render ---------- */
+var todayStr = todayIso();
+var feedCache = null, searchIdxCache = null, openItemLookup = {};
+
+function render() {
+  document.getElementById("todayDate").textContent = fmtFull(todayStr);
+
+  var syncBar = document.getElementById("syncBar");
+  var genAt = DATA.meta && DATA.meta.generatedAt ? new Date(DATA.meta.generatedAt).toLocaleString() : null;
+  syncBar.textContent = genAt ? ("✓ लाइभ डेटा · जेनेरेट गरिएको: " + genAt) : "✓ लाइभ डेटा";
+
+  var errBar = document.getElementById("errBar");
+  if (DATA.errors && DATA.errors.length) {
+    errBar.textContent = "⚠ केही डेटा लोड हुन सकेन: " + DATA.errors.join(" | ");
+    errBar.classList.remove("hidden");
+  } else {
+    errBar.classList.add("hidden");
+  }
+
+  renderTabs();
+  renderMonthTabs();
+  renderMain();
+}
+
+function renderTabs() {
+  var tabsEl = document.getElementById("tabs");
+  if (state.tab === "search") { tabsEl.classList.add("hidden"); return; }
+  tabsEl.classList.remove("hidden");
+  var defs = [
+    ["upcoming","आगामी","Upcoming"],
+    ["fieldService",CATS.fieldService.label,CATS.fieldService.sub],
+    ["publicTalks",CATS.publicTalks.label,CATS.publicTalks.sub],
+    ["lifeMinistry",CATS.lifeMinistry.label,CATS.lifeMinistry.sub],
+  ];
+  tabsEl.innerHTML = defs.map(function(d) {
+    var active = state.tab === d[0];
+    return '<button class="tab-btn'+(active?" active":"")+'" data-tab="'+d[0]+'"><div>'+esc(d[1])+'</div><div class="tab-btn-sub">'+esc(d[2])+'</div></button>';
+  }).join("");
+}
+
+function renderMonthTabs() {
+  var el = document.getElementById("monthTabs");
+  var months = null;
+  if (state.tab === "fieldService") months = Object.keys(DATA.fieldService || {}).sort();
+  if (state.tab === "lifeMinistry") months = Object.keys(DATA.lifeMinistry || {}).sort();
+  if (!months || !months.length) { el.classList.add("hidden"); el.innerHTML = ""; return; }
+  if (!state.month || months.indexOf(state.month) === -1) state.month = months[0];
+  el.classList.remove("hidden");
+  el.innerHTML = months.map(function(m) {
+    var active = state.month === m;
+    return '<button class="month-btn'+(active?" active":"")+'" data-month="'+m+'">'+esc(monthLabel(m))+'</button>';
+  }).join("");
+}
+
+function renderMain() {
+  var main = document.getElementById("main");
+
+  if (state.tab === "search") {
+    if (!searchIdxCache) searchIdxCache = buildSearchIndex();
+    var q = state.query.trim().toLowerCase();
+    var results = searchIdxCache.filter(function(r){ return r.name.toLowerCase().indexOf(q) !== -1; });
+    results.sort(function(a,b){ return a.iso < b.iso ? -1 : a.iso > b.iso ? 1 : 0; });
+    main.innerHTML = '<div class="grid">' +
+      (results.length === 0 ? '<div class="empty-state">"'+esc(state.query)+'" सँग मिल्ने कुनै जिम्मेवारी भेटिएन।</div>' : '') +
+      results.map(searchResultCardHtml).join("") +
+    '</div>';
+    return;
+  }
+
+  if (state.tab === "upcoming") {
+    if (!feedCache) feedCache = buildFeed();
+    var upcoming = feedCache.filter(function(f){ return f.iso >= todayStr; }).slice(0, 10);
+    openItemLookup = {}; upcoming.forEach(function(it){ openItemLookup[it.key] = it; });
+    main.innerHTML = '<div class="grid">' +
+      (upcoming.length === 0 ? '<div class="empty-state">कुनै आगामी कार्यक्रम भेटिएन।</div>' : '') +
+      upcoming.map(function(it){ return feedCardHtml(it, todayStr); }).join("") +
+    '</div>';
+    return;
+  }
+
+  if (state.tab === "fieldService") {
+    var fsEntries = (DATA.fieldService || {})[state.month] || [];
+    main.innerHTML = '<div class="grid">' +
+      (fsEntries.length === 0 ? '<div class="empty-state">यो महिनाको लागि डेटा भेटिएन।</div>' : '') +
+      fsEntries.map(function(e, i) {
+        var key = state.month + "-" + i;
+        return fieldServiceCardHtml(e, key, !!state.expandedFS[key]);
+      }).join("") +
+    '</div>';
+    return;
+  }
+
+  if (state.tab === "publicTalks") {
+    main.innerHTML = '<div class="grid">' + (DATA.publicTalks || []).map(publicTalkCardHtml).join("") + '</div>';
+    return;
+  }
+
+  if (state.tab === "lifeMinistry") {
+    var lmWeeks = (DATA.lifeMinistry || {})[state.month] || [];
+    main.innerHTML = '<div class="grid">' +
+      (lmWeeks.length === 0 ? '<div class="empty-state">यो महिनाको लागि डेटा भेटिएन।</div>' : '') +
+      lmWeeks.map(function(w, i) {
+        var key = state.month + "-" + i;
+        return lifeMinistryWeekHtml(w, key, !!state.expandedWeeks[key]);
+      }).join("") +
+    '</div>';
+    return;
+  }
+}
+
+function openModal(item) {
+  var c = CATS[item.cat];
+  var peopleHtml = item.people.length ? '<div class="card-foot">' + item.people.map(function(p){ return '<span class="person-tag">'+esc(p)+'</span>'; }).join("") + '</div>' : '';
+  document.getElementById("modalContent").innerHTML =
+    '<button class="modal-close" id="modalCloseBtn">✕</button>' +
+    catChipHtml(item.cat) +
+    '<div class="modal-date">'+esc(fmtFull(item.iso))+'</div>' +
+    '<h2 class="modal-title">'+esc(item.title)+'</h2>' +
+    (item.subtitle ? '<div class="modal-sub">'+esc(item.subtitle)+'</div>' : '') +
+    (item.raw.areas ? '<div class="areas-text">'+areasHtml(item.raw)+'</div>' : '') +
+    (item.raw.mapLink ? '<a class="map-link" href="'+esc(item.raw.mapLink)+'" target="_blank" rel="noreferrer">नक्सा हेर्नुहोस् ↗</a>' : '') +
+    peopleHtml;
+  document.getElementById("modalBackdrop").classList.remove("hidden");
+}
+function closeModal() { document.getElementById("modalBackdrop").classList.add("hidden"); }
+
+/* ---------- Event delegation ---------- */
+document.addEventListener("click", function(e) {
+  if (e.target.closest("a")) return; // let map/area links navigate normally
+
+  var tabBtn = e.target.closest("[data-tab]");
+  if (tabBtn) { state.tab = tabBtn.getAttribute("data-tab"); render(); return; }
+
+  var monthBtn = e.target.closest("[data-month]");
+  if (monthBtn) { state.month = monthBtn.getAttribute("data-month"); renderMonthTabs(); renderMain(); return; }
+
+  var openBtn = e.target.closest("[data-open-item]");
+  if (openBtn) {
+    var key = openBtn.getAttribute("data-open-item");
+    if (openItemLookup[key]) openModal(openItemLookup[key]);
+    return;
+  }
+
+  var toggleBtn = e.target.closest("[data-toggle-week]");
+  if (toggleBtn) {
+    var wkey = toggleBtn.getAttribute("data-toggle-week");
+    state.expandedWeeks[wkey] = !state.expandedWeeks[wkey];
+    renderMain();
+    return;
+  }
+
+  var toggleFsBtn = e.target.closest("[data-toggle-fs]");
+  if (toggleFsBtn) {
+    var fsKey = toggleFsBtn.getAttribute("data-toggle-fs");
+    state.expandedFS[fsKey] = !state.expandedFS[fsKey];
+    renderMain();
+    return;
+  }
+
+  if (e.target.id === "modalCloseBtn" || e.target.id === "modalBackdrop") closeModal();
+});
+
+document.getElementById("searchInput").addEventListener("input", function(e) {
+  state.query = e.target.value;
+  state.tab = state.query ? "search" : "upcoming";
+  render();
+});
+
+document.getElementById("copyrightYear").textContent = new Date().getFullYear();
+
+/* ============================================================
+   GOOGLE SIGN-IN GATE
+   ============================================================ */
+function showSigninError(msg) {
+  var el = document.getElementById("signinError");
+  el.textContent = msg;
+  el.style.display = "block";
+  document.getElementById("signinLoading").style.display = "none";
+}
+
+function handleCredentialResponse(response) {
+  document.getElementById("signinError").style.display = "none";
+  document.getElementById("signinLoading").style.display = "block";
+
+  var idToken = response.credential;
+  var url = APPS_SCRIPT_URL + (APPS_SCRIPT_URL.indexOf("?") === -1 ? "?" : "&") + "format=json&token=" + encodeURIComponent(idToken);
+
+  fetch(url)
+    .then(function(res) { return res.json(); })
+    .then(function(json) {
+      if (json && json.error === "access_denied") {
+        showSigninError("पहुँच अस्वीकृत — यो खाता स्वीकृत सूचीमा छैन। Access denied — this account is not on the allowed list.");
+        return;
+      }
+      if (json && json.error === "auth_required") {
+        showSigninError("साइन इन असफल भयो, फेरि प्रयास गर्नुहोस्। Sign-in failed, please try again.");
+        return;
+      }
+      DATA = json;
+      try { sessionStorage.setItem("programDashboardToken", idToken); } catch (_) {}
+      document.getElementById("signinScreen").classList.add("hidden");
+      document.getElementById("appRoot").style.display = "block";
+      render();
+    })
+    .catch(function(err) {
+      showSigninError("डेटा लोड गर्न सकिएन। नेटवर्क जाँच्नुहोस्। (" + err.message + ")");
+    });
+}
+
+function initSignin() {
+  if (!window.google || !google.accounts || !google.accounts.id) {
+    setTimeout(initSignin, 200);
+    return;
+  }
+  google.accounts.id.initialize({
+    client_id: GOOGLE_CLIENT_ID,
+    callback: handleCredentialResponse,
+  });
+  google.accounts.id.renderButton(document.getElementById("signinBtnHolder"), {
+    theme: "outline",
+    size: "large",
+    text: "signin_with",
+    shape: "pill",
+  });
+
+  // If we have a token from earlier this session, try it silently
+  // instead of making them click the button again.
+  var savedToken;
+  try { savedToken = sessionStorage.getItem("programDashboardToken"); } catch (_) {}
+  if (savedToken) {
+    handleCredentialResponse({ credential: savedToken });
+  }
+}
+
+initSignin();
+</script>
+</body>
+</html>
