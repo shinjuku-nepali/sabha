@@ -56,7 +56,7 @@
   .month-btn.active { background: #C98A2B; color: #fff; border-color: #C98A2B; }
 
   main { max-width: 1100px; margin: 0 auto; }
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; align-items: start; }
   .empty-state { color: #5C6B5F; font-size: calc(14px * var(--text-scale)); padding: 24px 4px; }
 
   .card { position: relative; background: #fff; border-radius: 12px; border-top: 3px solid; box-shadow: 0 1px 2px rgba(31,42,36,.06), 0 6px 16px rgba(31,42,36,.04); padding: 16px 16px 14px; border: 1px solid #ECEEE7; border-top-width: 3px; }
@@ -719,14 +719,45 @@ function handleCredentialResponse(response) {
         return;
       }
       DATA = json;
+      lastIdToken = idToken;
       try { sessionStorage.setItem("programDashboardToken", idToken); } catch (_) {}
       document.getElementById("signinScreen").classList.add("hidden");
       document.getElementById("appRoot").style.display = "block";
       render();
+      startAutoRefresh();
     })
     .catch(function(err) {
       showSigninError("डेटा लोड गर्न सकिएन। नेटवर्क जाँच्नुहोस्। (" + err.message + ")");
     });
+}
+
+/* ============================================================
+   AUTO-REFRESH — quietly re-fetches data every 30 minutes so
+   the dashboard stays current without needing a manual reload.
+   Matches the backend's CACHE_SECONDS in Code.gs.
+   ============================================================ */
+var lastIdToken = null;
+var autoRefreshTimer = null;
+var AUTO_REFRESH_MS = 30 * 60 * 1000;
+
+function startAutoRefresh() {
+  if (autoRefreshTimer) return;
+  autoRefreshTimer = setInterval(silentRefresh, AUTO_REFRESH_MS);
+}
+
+function silentRefresh() {
+  if (!lastIdToken) return;
+  var url = APPS_SCRIPT_URL + (APPS_SCRIPT_URL.indexOf("?") === -1 ? "?" : "&") + "format=json&token=" + encodeURIComponent(lastIdToken);
+  fetch(url)
+    .then(function(res) { return res.json(); })
+    .then(function(json) {
+      if (!json || json.error) return; // token may have expired; skip quietly, next timer tick tries again
+      DATA = json;
+      feedCache = null;
+      searchIdxCache = null;
+      render();
+    })
+    .catch(function() { /* network hiccup — try again on the next interval */ });
 }
 
 function initSignin() {
