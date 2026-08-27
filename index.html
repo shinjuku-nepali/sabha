@@ -711,7 +711,7 @@ function handleCredentialResponse(response) {
     .then(function(res) { return res.json(); })
     .then(function(json) {
       if (json && json.error === "access_denied") {
-        showSigninError("पहुँच अस्वीकृत — यो खाता स्वीकृत सूचीमा छैन। Access denied — this account is not on the allowed list.");
+        showSigninError("प्रवेश निषेध गरिएको छ — यो खाता अनुमति सूचीमा समावेश छैन। Access denied — this account is not on the allowed list.");
         return;
       }
       if (json && json.error === "auth_required") {
