@@ -9,93 +9,183 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="मण्डली कार्यक्रम">
 <meta name="theme-color" content="#1F2A24">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap');
-  :root { --text-scale: 1; }
+  :root {
+    --text-scale: 1;
+    /* Light theme (default) */
+    --bg: #EEF0EA;
+    --surface: #FFFFFF;
+    --ink: #232A24;
+    --ink-strong: #1F2A24;
+    --ink-on-strong: #F3F1E8;
+    --ink-muted: #5C6B5F;
+    --ink-faint: #8A8F82;
+    --ink-faintest: #A6AB9C;
+    --ink-eyebrow: #6B7A6D;
+    --agenda-text: #3A423B;
+    --border: #DDE1D6;
+    --border-soft: #E4E1D3;
+    --border-strong: #CDD3C4;
+    --card-border: #ECEEE7;
+    --chip-bg: #EEF0EA;
+    --chip-bg2: #F3F1E8;
+    --chip-bg3: #F7F8F4;
+    --accent-gold: #C98A2B;
+    --accent-gold-text: #FFFFFF;
+    --danger-bg: #FBE9E7;
+    --danger-text: #8B3A2B;
+    --sync-bg: #E9F0EA;
+    --sync-text: #2F5D50;
+    --scrollbar: #C9CFC0;
+    --cat-blue: #3E6598;
+    --cat-blue-tint: #EAF0F8;
+    --cat-plum: #7C4B6E;
+    --cat-plum-tint: #F4EDF2;
+    --cat-olive: #8B6F1F;
+    --cat-olive-tint: #F6F1E2;
+    --shadow-1: rgba(31,42,36,.06);
+    --shadow-2: rgba(31,42,36,.04);
+    --modal-backdrop: rgba(31,42,36,.45);
+  }
+  [data-theme="dark"] {
+    --bg: #171C18;
+    --surface: #232A24;
+    --ink: #E7E9E2;
+    --ink-strong: #EDE9DD;
+    --ink-on-strong: #1F2A24;
+    --ink-muted: #A9B0A2;
+    --ink-faint: #848B7E;
+    --ink-faintest: #6C7266;
+    --ink-eyebrow: #7C8377;
+    --agenda-text: #D3D6CC;
+    --border: #333B34;
+    --border-soft: #2E352F;
+    --border-strong: #3D453E;
+    --card-border: #2B322C;
+    --chip-bg: #2B322C;
+    --chip-bg2: #2B322C;
+    --chip-bg3: #1D231E;
+    --accent-gold: #E0A542;
+    --accent-gold-text: #1F2A24;
+    --danger-bg: #3A2420;
+    --danger-text: #F2A99B;
+    --sync-bg: #1B2A22;
+    --sync-text: #8FCBAE;
+    --scrollbar: #3D453E;
+    --cat-blue: #7FA8D6;
+    --cat-blue-tint: #1C2733;
+    --cat-plum: #D79FC4;
+    --cat-plum-tint: #2B1F27;
+    --cat-olive: #D9B655;
+    --cat-olive-tint: #2E2814;
+    --shadow-1: rgba(0,0,0,.3);
+    --shadow-2: rgba(0,0,0,.24);
+    --modal-backdrop: rgba(0,0,0,.6);
+  }
+  body, .card, .feed-card, .modal, .text-size-toggle, .theme-toggle { transition: background-color .2s ease, color .2s ease, border-color .2s ease; }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   body {
     margin: 0;
     font-family: 'Noto Sans Devanagari','Noto Sans JP','Noto Sans',sans-serif;
-    background: #EEF0EA;
-    color: #232A24;
+    background: var(--bg);
+    color: var(--ink);
     padding: max(20px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(40px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
   }
   button { font: inherit; cursor: pointer; }
   a { color: inherit; }
   ::-webkit-scrollbar { height: 6px; width: 6px; }
-  ::-webkit-scrollbar-thumb { background: #C9CFC0; border-radius: 4px; }
+  ::-webkit-scrollbar-thumb { background: var(--scrollbar); border-radius: 4px; }
 
   .header {
     display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap;
-    gap: 12px; max-width: 1100px; margin: 0 auto 18px; border-bottom: 1px solid #DDE1D6; padding-bottom: 16px;
+    gap: 12px; max-width: 1100px; margin: 0 auto 18px; border-bottom: 1px solid var(--border); padding-bottom: 16px;
   }
-  .eyebrow { font-family: 'IBM Plex Mono', monospace; font-size: calc(11px * var(--text-scale)); letter-spacing: 1.2px; text-transform: uppercase; color: #6B7A6D; margin-bottom: 6px; }
-  h1 { font-family: 'Fraunces', serif; font-weight: 600; font-size: calc(34px * var(--text-scale)); margin: 0; color: #1F2A24; }
-  .header-sub { font-size: calc(13px * var(--text-scale)); color: #5C6B5F; margin-top: 6px; }
-  .today-badge { background: #1F2A24; color: #F3F1E8; border-radius: 10px; padding: 10px 16px; min-width: 180px; }
-  .text-size-toggle { display: flex; align-items: center; gap: 2px; background: #fff; border: 1px solid #CDD3C4; border-radius: 999px; padding: 3px; }
-  .text-size-btn { border: none; background: transparent; color: #232A24; border-radius: 999px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-family: 'Fraunces', serif; font-weight: 700; -webkit-appearance: none; appearance: none; }
+  .eyebrow { font-family: 'IBM Plex Mono', monospace; font-size: calc(11px * var(--text-scale)); letter-spacing: 1.2px; text-transform: uppercase; color: var(--ink-eyebrow); margin-bottom: 6px; }
+  h1 { font-family: 'Fraunces', serif; font-weight: 600; font-size: calc(34px * var(--text-scale)); margin: 0; color: var(--ink-strong); }
+  .header-sub { font-size: calc(13px * var(--text-scale)); color: var(--ink-muted); margin-top: 6px; }
+  .today-badge { background: var(--ink-strong); color: var(--ink-on-strong); border-radius: 10px; padding: 10px 16px; min-width: 180px; }
+  .theme-toggle { border: 1px solid var(--border-strong); background: var(--surface); color: var(--ink); border-radius: 999px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 17px; }
+  .text-size-toggle { display: flex; align-items: center; gap: 2px; background: var(--surface); border: 1px solid var(--border-strong); border-radius: 999px; padding: 3px; }
+  .text-size-btn { border: none; background: transparent; color: var(--ink); border-radius: 999px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-family: 'Fraunces', serif; font-weight: 700; -webkit-appearance: none; appearance: none; }
   .text-size-btn:first-child { font-size: 15px; }
   .text-size-btn:last-child { font-size: 20px; }
   .text-size-btn:disabled { opacity: .3; }
-  .text-size-pct { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #5C6B5F; min-width: 38px; text-align: center; }
+  .text-size-pct { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--ink-muted); min-width: 38px; text-align: center; }
   .today-label { font-family: 'IBM Plex Mono', monospace; font-size: calc(10px * var(--text-scale)); letter-spacing: 1px; opacity: .7; }
   .today-date { font-size: calc(14px * var(--text-scale)); font-weight: 600; margin-top: 2px; }
 
-  .sync-bar { max-width: 1100px; margin: 0 auto 12px; background: #E9F0EA; color: #2F5D50; border-radius: 8px; padding: 8px 14px; font-size: calc(12.5px * var(--text-scale)); }
-  .err-bar { max-width: 1100px; margin: 0 auto 12px; background: #FBE9E7; color: #8B3A2B; border-radius: 8px; padding: 8px 14px; font-size: calc(12.5px * var(--text-scale)); }
+  .sync-bar { max-width: 1100px; margin: 0 auto 12px; background: var(--sync-bg); color: var(--sync-text); border-radius: 8px; padding: 8px 14px; font-size: calc(12.5px * var(--text-scale)); }
+  .err-bar { max-width: 1100px; margin: 0 auto 12px; background: var(--danger-bg); color: var(--danger-text); border-radius: 8px; padding: 8px 14px; font-size: calc(12.5px * var(--text-scale)); }
 
   .tabs { display: flex; gap: 8px; max-width: 1100px; margin: 0 auto 12px; flex-wrap: wrap; }
-  .tab-btn { border: 1px solid #DDE1D6; background: #fff; border-radius: 10px; padding: 10px 14px; text-align: left; color: #232A24; line-height: 1.3; min-height: 44px; -webkit-appearance: none; appearance: none; }
-  .tab-btn.active { background: #1F2A24; color: #F3F1E8; border-color: #1F2A24; }
+  .tab-btn { border: 1px solid var(--border); background: var(--surface); border-radius: 10px; padding: 10px 14px; text-align: left; color: var(--ink); line-height: 1.3; min-height: 44px; -webkit-appearance: none; appearance: none; }
+  .tab-btn.active { background: var(--ink-strong); color: var(--ink-on-strong); border-color: var(--ink-strong); }
   .tab-btn-sub { font-family: 'IBM Plex Mono', monospace; font-size: calc(10px * var(--text-scale)); opacity: .65; }
 
   .month-tabs { display: flex; gap: 8px; max-width: 1100px; margin: 0 auto 16px; flex-wrap: wrap; }
-  .month-btn { border: 1px solid #CDD3C4; background: transparent; border-radius: 999px; padding: 10px 16px; font-size: calc(12px * var(--text-scale)); font-family: 'IBM Plex Mono', monospace; color: #5C6B5F; min-height: 40px; -webkit-appearance: none; appearance: none; }
-  .month-btn.active { background: #C98A2B; color: #fff; border-color: #C98A2B; }
+  .month-btn { border: 1px solid var(--border-strong); background: transparent; border-radius: 999px; padding: 10px 16px; font-size: calc(12px * var(--text-scale)); font-family: 'IBM Plex Mono', monospace; color: var(--ink-muted); min-height: 40px; -webkit-appearance: none; appearance: none; }
+  .month-btn.active { background: var(--accent-gold); color: var(--accent-gold-text); border-color: var(--accent-gold); }
+
+  .search-input { width: 100%; padding: 13px 16px; border-radius: 10px; border: 1px solid var(--border-strong); background: var(--surface); color: var(--ink); font-size: calc(15px * var(--text-scale)); font-family: inherit; outline: none; -webkit-appearance: none; appearance: none; }
+  .primary-btn { border: none; background: var(--ink-strong); color: var(--ink-on-strong); border-radius: 10px; padding: 13px 20px; font-size: calc(14px * var(--text-scale)); font-weight: 600; min-height: 48px; white-space: nowrap; }
+  .link-btn { border: none; background: none; color: var(--cat-blue); text-decoration: underline; font-size: calc(13px * var(--text-scale)); padding: 6px 4px; }
+
+  .my-name-setup { max-width: 480px; margin: 6vh auto 0; text-align: center; padding: 0 8px; }
+  .my-name-title { font-family: 'Fraunces', serif; font-weight: 600; font-size: calc(22px * var(--text-scale)); margin-bottom: 8px; }
+  .my-name-hint { font-size: calc(13.5px * var(--text-scale)); color: var(--ink-muted); margin-bottom: 18px; line-height: 1.6; }
+  .my-name-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .my-name-row .search-input { flex: 1; min-width: 200px; }
+
+  .my-name-bar { display: flex; justify-content: space-between; align-items: center; max-width: 1100px; margin: 0 auto 14px; font-size: calc(13.5px * var(--text-scale)); color: var(--ink-muted); }
 
   main { max-width: 1100px; margin: 0 auto; }
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; align-items: start; }
-  .empty-state { color: #5C6B5F; font-size: calc(14px * var(--text-scale)); padding: 24px 4px; }
+  .empty-state { color: var(--ink-muted); font-size: calc(14px * var(--text-scale)); padding: 24px 4px; }
 
-  .card { position: relative; background: #fff; border-radius: 12px; border-top: 3px solid; box-shadow: 0 1px 2px rgba(31,42,36,.06), 0 6px 16px rgba(31,42,36,.04); padding: 16px 16px 14px; border: 1px solid #ECEEE7; border-top-width: 3px; }
+  .card { position: relative; background: var(--surface); border-radius: 12px; border-top: 3px solid; box-shadow: 0 1px 2px rgba(31,42,36,.06), 0 6px 16px rgba(31,42,36,.04); padding: 16px 16px 14px; border: 1px solid var(--card-border); border-top-width: 3px; }
   .card.clickable { cursor: pointer; }
   .pin { position: absolute; top: 10px; right: 12px; width: 8px; height: 8px; border-radius: 50%; }
   .card-header-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; padding-right: 14px; }
   .card-title { font-family: 'Fraunces', serif; font-weight: 600; font-size: calc(17px * var(--text-scale)); margin-bottom: 4px; padding-right: 14px; }
-  .card-title-faint { font-style: italic; color: #A6AB9C; margin-bottom: 4px; font-size: calc(14px * var(--text-scale)); }
-  .card-sub { font-size: calc(12px * var(--text-scale)); color: #5C6B5F; margin-bottom: 8px; }
+  .card-title-faint { font-style: italic; color: var(--ink-faintest); margin-bottom: 4px; font-size: calc(14px * var(--text-scale)); }
+  .card-sub { font-size: calc(12px * var(--text-scale)); color: var(--ink-muted); margin-bottom: 8px; }
   .card-foot { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px; }
-  .cat-label { font-size: calc(11px * var(--text-scale)); color: #8A8F82; margin-bottom: 4px; }
-  .sub-faint { color: #A6AB9C; }
+  .cat-label { font-size: calc(11px * var(--text-scale)); color: var(--ink-faint); margin-bottom: 4px; }
+  .sub-faint { color: var(--ink-faintest); }
 
-  .date-stamp { font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: calc(12px * var(--text-scale)); background: #1F2A24; color: #F3F1E8; border-radius: 6px; padding: 3px 8px; }
-  .rel-badge { font-family: 'IBM Plex Mono', monospace; font-size: calc(10px * var(--text-scale)); color: #fff; border-radius: 6px; padding: 3px 8px; }
-  .day-tag { font-size: calc(12px * var(--text-scale)); color: #5C6B5F; }
-  .time-tag { font-family: 'IBM Plex Mono', monospace; font-size: calc(11px * var(--text-scale)); background: #F3F1E8; border: 1px solid #E4E1D3; border-radius: 6px; padding: 3px 7px; }
-  .num-tag { font-family: 'IBM Plex Mono', monospace; font-size: calc(11px * var(--text-scale)); color: #8A8F82; }
-  .person-tag { font-size: calc(12px * var(--text-scale)); background: #EEF0EA; border-radius: 999px; padding: 3px 10px; font-weight: 500; display: inline-block; }
-  .role-label { font-size: calc(11px * var(--text-scale)); color: #8A8F82; }
-  .areas-text { font-size: calc(12px * var(--text-scale)); color: #5C6B5F; white-space: pre-line; background: #F7F8F4; border-radius: 8px; padding: 8px 10px; margin-top: 6px; line-height: 1.5; }
-  .area-link { color: #3E6598; text-decoration: underline; text-decoration-color: #3E659888; font-weight: 600; }
-  .area-link:hover { text-decoration-color: #3E6598; }
-  .jp-text { font-size: calc(12px * var(--text-scale)); color: #8A8F82; margin-bottom: 4px; }
-  .note-text { font-size: calc(12px * var(--text-scale)); color: #8A8F82; margin-top: 8px; font-style: italic; }
-  .map-link { font-size: calc(12px * var(--text-scale)); color: #3E6598; text-decoration: none; font-weight: 600; display: inline-block; margin-bottom: 6px; }
+  .date-stamp { font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: calc(12px * var(--text-scale)); background: var(--ink-strong); color: var(--ink-on-strong); border-radius: 6px; padding: 3px 8px; }
+  .rel-badge { font-family: 'IBM Plex Mono', monospace; font-size: calc(10px * var(--text-scale)); background: var(--ink-strong); color: var(--ink-on-strong); border-radius: 6px; padding: 3px 8px; }
+  .day-tag { font-size: calc(12px * var(--text-scale)); color: var(--ink-muted); }
+  .time-tag { font-family: 'IBM Plex Mono', monospace; font-size: calc(11px * var(--text-scale)); background: var(--ink-on-strong); border: 1px solid var(--border-soft); border-radius: 6px; padding: 3px 7px; }
+  .num-tag { font-family: 'IBM Plex Mono', monospace; font-size: calc(11px * var(--text-scale)); color: var(--ink-faint); }
+  .person-tag { font-size: calc(12px * var(--text-scale)); background: var(--bg); border-radius: 999px; padding: 3px 10px; font-weight: 500; display: inline-block; }
+  .role-label { font-size: calc(11px * var(--text-scale)); color: var(--ink-faint); }
+  .areas-text { font-size: calc(12px * var(--text-scale)); color: var(--ink-muted); white-space: pre-line; background: var(--chip-bg3); border-radius: 8px; padding: 8px 10px; margin-top: 6px; line-height: 1.5; }
+  .area-link { color: var(--cat-blue); text-decoration: underline; text-decoration-color: var(--cat-blue); font-weight: 600; }
+  .area-link:hover { text-decoration-color: var(--cat-blue); }
+  .jp-text { font-size: calc(12px * var(--text-scale)); color: var(--ink-faint); margin-bottom: 4px; }
+  .note-text { font-size: calc(12px * var(--text-scale)); color: var(--ink-faint); margin-top: 8px; font-style: italic; }
+  .map-link { font-size: calc(12px * var(--text-scale)); color: var(--cat-blue); text-decoration: none; font-weight: 600; display: inline-block; margin-bottom: 6px; }
+  .ics-btn { font-size: calc(11.5px * var(--text-scale)); color: var(--ink-muted); background: var(--chip-bg2); border: 1px solid var(--border-soft); border-radius: 999px; padding: 6px 12px; margin-top: 8px; display: inline-block; }
+  .ics-btn:active { background: var(--border-soft); }
 
   .role-grid { display: flex; flex-wrap: wrap; gap: 8px 14px; margin-top: 10px; }
   .role-item { display: flex; flex-direction: column; gap: 3px; }
 
-  .special-banner { background: #F6F1E2; color: #8B6F1F; border-radius: 8px; padding: 10px 12px; font-weight: 600; font-size: calc(14px * var(--text-scale)); }
-  .expand-hint { font-family: 'IBM Plex Mono', monospace; font-size: calc(11px * var(--text-scale)); color: #8B6F1F; margin-top: 4px; }
-  .agenda { margin-top: 12px; border-top: 1px dashed #E4E1D3; padding-top: 10px; display: flex; flex-direction: column; gap: 6px; }
+  .special-banner { background: var(--cat-olive-tint); color: var(--cat-olive); border-radius: 8px; padding: 10px 12px; font-weight: 600; font-size: calc(14px * var(--text-scale)); }
+  .expand-hint { font-family: 'IBM Plex Mono', monospace; font-size: calc(11px * var(--text-scale)); color: var(--cat-olive); margin-top: 4px; }
+  .agenda { margin-top: 12px; border-top: 1px dashed var(--border-soft); padding-top: 10px; display: flex; flex-direction: column; gap: 6px; }
   .agenda-row, .agenda-section { display: flex; align-items: baseline; gap: 8px; font-size: calc(12.5px * var(--text-scale)); }
   .agenda-section { margin-top: 8px; }
-  .agenda-time { font-family: 'IBM Plex Mono', monospace; font-size: calc(10.5px * var(--text-scale)); color: #A6AB9C; min-width: 40px; }
-  .agenda-text { flex: 1; color: #3A423B; }
-  .agenda-section-text { flex: 1; color: #8B6F1F; font-weight: 700; }
-  .agenda-assignee { font-size: calc(11px * var(--text-scale)); color: #5C6B5F; font-weight: 600; white-space: nowrap; }
+  .agenda-time { font-family: 'IBM Plex Mono', monospace; font-size: calc(10.5px * var(--text-scale)); color: var(--ink-faintest); min-width: 40px; }
+  .agenda-text { flex: 1; color: var(--agenda-text); }
+  .agenda-section-text { flex: 1; color: var(--cat-olive); font-weight: 700; }
+  .agenda-assignee { font-size: calc(11px * var(--text-scale)); color: var(--ink-muted); font-weight: 600; white-space: nowrap; }
 
   .cat-chip { font-size: calc(11px * var(--text-scale)); font-weight: 600; border-radius: 999px; padding: 3px 10px; display: inline-block; margin-bottom: 8px; }
 
@@ -111,23 +201,23 @@
   .lm-card .agenda-assignee { font-size: calc(13.2px * var(--text-scale)); }
 
   .modal-backdrop { position: fixed; inset: 0; background: rgba(31,42,36,.45); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 50; }
-  .modal { background: #fff; border-radius: 16px; padding: 24px; max-width: 480px; width: 100%; position: relative; max-height: 80vh; overflow-y: auto; }
-  .modal-close { position: absolute; top: 14px; right: 14px; border: none; background: #F3F1E8; border-radius: 50%; width: 36px; height: 36px; font-size: calc(15px * var(--text-scale)); -webkit-appearance: none; appearance: none; }
-  .modal-date { font-size: calc(12px * var(--text-scale)); color: #8A8F82; margin-bottom: 6px; font-family: 'IBM Plex Mono', monospace; }
+  .modal { background: var(--surface); border-radius: 16px; padding: 24px; max-width: 480px; width: 100%; position: relative; max-height: 80vh; overflow-y: auto; }
+  .modal-close { position: absolute; top: 14px; right: 14px; border: none; background: var(--ink-on-strong); border-radius: 50%; width: 36px; height: 36px; font-size: calc(15px * var(--text-scale)); -webkit-appearance: none; appearance: none; }
+  .modal-date { font-size: calc(12px * var(--text-scale)); color: var(--ink-faint); margin-bottom: 6px; font-family: 'IBM Plex Mono', monospace; }
   .modal-title { font-family: 'Fraunces', serif; font-size: calc(22px * var(--text-scale)); margin: 0 0 8px; }
-  .modal-sub { font-size: calc(13px * var(--text-scale)); color: #5C6B5F; margin-bottom: 10px; }
+  .modal-sub { font-size: calc(13px * var(--text-scale)); color: var(--ink-muted); margin-bottom: 10px; }
   .hidden { display: none !important; }
 
   /* Sign-in gate */
   #signinScreen { max-width: 420px; margin: 18vh auto 0; text-align: center; padding: 0 16px; }
   #signinScreen h1 { font-size: calc(26px * var(--text-scale)); margin-bottom: 6px; }
-  #signinScreen p { font-size: calc(13.5px * var(--text-scale)); color: #5C6B5F; margin-bottom: 22px; line-height: 1.6; }
+  #signinScreen p { font-size: calc(13.5px * var(--text-scale)); color: var(--ink-muted); margin-bottom: 22px; line-height: 1.6; }
   #signinBtnHolder { display: flex; justify-content: center; }
-  #signinError { margin-top: 18px; font-size: calc(13px * var(--text-scale)); color: #8B3A2B; background: #FBE9E7; border-radius: 8px; padding: 10px 14px; display: none; }
-  #signinLoading { font-size: calc(13px * var(--text-scale)); color: #5C6B5F; margin-top: 14px; display: none; }
+  #signinError { margin-top: 18px; font-size: calc(13px * var(--text-scale)); color: var(--danger-text); background: var(--danger-bg); border-radius: 8px; padding: 10px 14px; display: none; }
+  #signinLoading { font-size: calc(13px * var(--text-scale)); color: var(--ink-muted); margin-top: 14px; display: none; }
   #appRoot { display: none; }
 
-  footer { max-width: 1100px; margin: 30px auto 0; text-align: center; font-size: calc(12px * var(--text-scale)); color: #A6AB9C; padding-bottom: 8px; }
+  footer { max-width: 1100px; margin: 30px auto 0; text-align: center; font-size: calc(12px * var(--text-scale)); color: var(--ink-faintest); padding-bottom: 8px; }
 
   @media (max-width: 480px) {
     body { padding-left: max(12px, env(safe-area-inset-left)); padding-right: max(12px, env(safe-area-inset-right)); }
@@ -230,6 +320,7 @@
       <h1>मण्डलीको कार्यक्रम</h1>
     </div>
     <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="डार्क मोड">🌙</button>
       <div class="text-size-toggle" role="group" aria-label="Text size">
         <button class="text-size-btn" id="textSizeDown" aria-label="Decrease text size" title="अक्षर सानो पार्नुहोस्">A</button>
         <span class="text-size-pct" id="textSizePct">100%</span>
@@ -272,14 +363,14 @@ var GOOGLE_CLIENT_ID = "752070145895-49kenu29mj4jfei3di41nahpvkv69ded.apps.googl
 var DATA = null;
 
 var CATS = {
-  fieldService: { label: "क्षेत्र सेवा", sub: "Field Service", color: "#3E6598", tint: "#EAF0F8" },
-  publicTalks: { label: "जनभाषण", sub: "Public Talk", color: "#7C4B6E", tint: "#F4EDF2" },
-  lifeMinistry: { label: "जीवन र सेवा सभा", sub: "Life & Ministry", color: "#8B6F1F", tint: "#F6F1E2" },
+  fieldService: { label: "क्षेत्र सेवा", sub: "Field Service", color: "var(--cat-blue)", tint: "var(--cat-blue-tint)" },
+  publicTalks: { label: "जनभाषण", sub: "Public Talk", color: "var(--cat-plum)", tint: "var(--cat-plum-tint)" },
+  lifeMinistry: { label: "जीवन र सेवा सभा", sub: "Life & Ministry", color: "var(--cat-olive)", tint: "var(--cat-olive-tint)" },
 };
 var NEPALI_MONTHS_EN = { "01":"January","02":"February","03":"March","04":"April","05":"May","06":"June","07":"July","08":"August","09":"September","10":"October","11":"November","12":"December" };
 var SECTION_HEADERS = { "बाइबलमा पाइने अनमोल धन":1, "कुराकानी गर्ने सीप तिखारौँ":1, "ख्रीष्टियन जीवन":1 };
 
-var state = { tab: "upcoming", month: null, query: "", expandedWeeks: {}, expandedFS: {}, openItem: null };
+var state = { tab: "thisWeek", month: null, query: "", expandedWeeks: {}, expandedFS: {}, openItem: null };
 
 function monthLabel(ymKey) {
   var parts = ymKey.split("-");
@@ -300,12 +391,121 @@ function relLabel(iso, todayStr) {
   if (n > 1 && n < 7) return n + " दिनमा · in " + n + " days";
   return null;
 }
+function isoOf(d) { return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0"); }
+function thisWeekBounds() {
+  var d = new Date();
+  var day = d.getDay(); // 0 = Sunday
+  var start = new Date(d); start.setDate(d.getDate() - day);
+  var end = new Date(d); end.setDate(d.getDate() + (6 - day));
+  return { start: isoOf(start), end: isoOf(end) };
+}
+var MY_NAME_KEY = "programDashboardMyName";
+function getMyName() {
+  try { return localStorage.getItem(MY_NAME_KEY); } catch (_) { return null; }
+}
+function setMyName(name) {
+  try { localStorage.setItem(MY_NAME_KEY, name); } catch (_) {}
+}
+function clearMyName() {
+  try { localStorage.removeItem(MY_NAME_KEY); } catch (_) {}
+}
 function esc(str) {
   if (str === null || str === undefined) return "";
   return String(str).replace(/[&<>"']/g, function(c) {
     return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
   });
 }
+
+/* ============================================================
+   ADD TO CALENDAR — builds a .ics file for a single event and
+   hands it to the phone's calendar app. Works with either a
+   specific time (field service, Life & Ministry) or falls back
+   to an all-day event when no time is known (public talks).
+   ============================================================ */
+var CAT_DURATION_MIN = { fieldService: 120, lifeMinistry: 105, publicTalks: 90 };
+var icsLookup = {};
+
+// Accepts either "AM10:00"/"PM5:30" (field service) or already
+// 24-hour "HH:MM" (Life & Ministry) and returns 24-hour "HH:MM".
+function normalizeTimeTo24h(raw) {
+  if (!raw) return null;
+  raw = String(raw).trim();
+  var ampm = raw.match(/^([AP])M\s*(\d{1,2}):(\d{2})$/i);
+  if (ampm) {
+    var isPM = ampm[1].toUpperCase() === "P";
+    var h = parseInt(ampm[2], 10) % 12;
+    if (isPM) h += 12;
+    return String(h).padStart(2, "0") + ":" + ampm[3];
+  }
+  var h24 = raw.match(/^(\d{1,2}):(\d{2})$/);
+  if (h24) return String(parseInt(h24[1], 10)).padStart(2, "0") + ":" + h24[2];
+  return null;
+}
+
+function icsEscape(str) {
+  return String(str || "").replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\n/g, "\\n");
+}
+
+// ev: { iso, time (optional "HH:MM" 24h, null = all-day), durationMin, title, location, description }
+function buildIcs(ev) {
+  var uid = "programdashboard-" + ev.iso + "-" + Math.random().toString(36).slice(2) + "@congregation";
+  var now = new Date();
+  var dtstamp = now.getUTCFullYear() + String(now.getUTCMonth()+1).padStart(2,"0") + String(now.getUTCDate()).padStart(2,"0") +
+    "T" + String(now.getUTCHours()).padStart(2,"0") + String(now.getUTCMinutes()).padStart(2,"0") + String(now.getUTCSeconds()).padStart(2,"0") + "Z";
+  var isoCompact = ev.iso.replace(/-/g, "");
+  var lines = ["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Program Dashboard//EN","CALSCALE:GREGORIAN","METHOD:PUBLISH","BEGIN:VEVENT","UID:"+uid,"DTSTAMP:"+dtstamp];
+
+  if (ev.time) {
+    var parts = ev.time.split(":");
+    var h = parseInt(parts[0], 10), m = parseInt(parts[1], 10);
+    var dur = ev.durationMin || 60;
+    var endMin = h * 60 + m + dur;
+    var eh = Math.floor(endMin / 60) % 24, em = endMin % 60;
+    lines.push("DTSTART:" + isoCompact + "T" + String(h).padStart(2,"0") + String(m).padStart(2,"0") + "00");
+    lines.push("DTEND:" + isoCompact + "T" + String(eh).padStart(2,"0") + String(em).padStart(2,"0") + "00");
+  } else {
+    var d = toDateObj(ev.iso);
+    var next = new Date(d); next.setDate(d.getDate() + 1);
+    lines.push("DTSTART;VALUE=DATE:" + isoCompact);
+    lines.push("DTEND;VALUE=DATE:" + isoOf(next).replace(/-/g, ""));
+  }
+
+  lines.push("SUMMARY:" + icsEscape(ev.title));
+  if (ev.location) lines.push("LOCATION:" + icsEscape(ev.location));
+  if (ev.description) lines.push("DESCRIPTION:" + icsEscape(ev.description));
+  lines.push("END:VEVENT", "END:VCALENDAR");
+  return lines.join("\r\n");
+}
+
+function downloadIcs(ev) {
+  var ics = buildIcs(ev);
+  var blob = new Blob([ics], { type: "text/calendar;charset=utf-8" });
+  var url = URL.createObjectURL(blob);
+  // Deliberately no "download" attribute: on iOS/iPadOS Safari, a plain
+  // navigation to a text/calendar blob opens the native "Add to
+  // Calendar" sheet directly. Adding "download" instead forces a file
+  // save on some browsers, which skips that native prompt.
+  var a = document.createElement("a");
+  a.href = url;
+  a.target = "_blank";
+  a.rel = "noopener";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function() { URL.revokeObjectURL(url); }, 4000);
+}
+
+function icsButtonHtml(key) {
+  return '<button class="ics-btn" data-add-ics="'+key+'">📅 क्यालेन्डरमा थप्नुहोस्</button>';
+}
+
+// Renders the ics button AND registers its event descriptor in
+// icsLookup under the given key, so the click handler can find it.
+function registerIcs(key, ev) {
+  icsLookup[key] = ev;
+  return icsButtonHtml(key);
+}
+
 // Renders the इलाका (areas) cell, preserving per-line hyperlinks if the
 // spreadsheet has any (e.g. "Okubo①-1" linking to a map). Falls back to
 // plain text when there are no links.
@@ -347,19 +547,20 @@ function buildSearchIndex() {
   var rows = [];
   Object.keys(DATA.fieldService || {}).forEach(function(m) {
     (DATA.fieldService[m] || []).forEach(function(e) {
-      if (e.conductor) rows.push({ cat:"fieldService", iso:e.iso, name:e.conductor, role:"संचालक भाइ", context:e.place || e.areas || "क्षेत्र सेवा" });
+      if (e.conductor) rows.push({ cat:"fieldService", iso:e.iso, time:e.time, name:e.conductor, role:"संचालक भाइ", context:e.place || e.areas || "क्षेत्र सेवा" });
     });
   });
   (DATA.publicTalks || []).forEach(function(t) {
     [[t.speaker,"वक्ता"],[t.chairman,"चेयरम्यान"],[t.wtConductor,"प्र.ध.संचालक"],[t.reader,"पढने भाइ"]].forEach(function(pair) {
-      if (pair[0]) rows.push({ cat:"publicTalks", iso:t.iso, name:pair[0], role:pair[1], context:t.topicNp || t.date });
+      if (pair[0]) rows.push({ cat:"publicTalks", iso:t.iso, time:null, name:pair[0], role:pair[1], context:t.topicNp || t.date });
     });
   });
   Object.keys(DATA.lifeMinistry || {}).forEach(function(m) {
     (DATA.lifeMinistry[m] || []).forEach(function(w) {
-      if (w.chairman) rows.push({ cat:"lifeMinistry", iso:w.iso, name:w.chairman, role:"अध्यक्ष", context:w.special || "साप्ताहिक सभा" });
+      var firstTime = w.items && w.items[0] ? w.items[0].time : null;
+      if (w.chairman) rows.push({ cat:"lifeMinistry", iso:w.iso, time:firstTime, name:w.chairman, role:"अध्यक्ष", context:w.special || "साप्ताहिक सभा" });
       (w.items || []).forEach(function(it) {
-        if (it.assignee) rows.push({ cat:"lifeMinistry", iso:w.iso, name:it.assignee, role:it.text, context:w.special || "साप्ताहिक सभा" });
+        if (it.assignee) rows.push({ cat:"lifeMinistry", iso:w.iso, time:it.time||firstTime, name:it.assignee, role:it.text, context:w.special || "साप्ताहिक सभा" });
       });
     });
   });
@@ -368,7 +569,7 @@ function buildSearchIndex() {
 
 /* ---------- HTML builders ---------- */
 function pinHtml(color) {
-  return '<span class="pin" style="background:'+color+';box-shadow:0 0 0 3px '+color+'22"></span>';
+  return '<span class="pin" style="background:'+color+';box-shadow:0 0 0 3px color-mix(in srgb, '+color+' 13%, transparent)"></span>';
 }
 function catChipHtml(cat) {
   var c = CATS[cat];
@@ -379,17 +580,26 @@ function feedCardHtml(item, todayStr) {
   var c = CATS[item.cat];
   var rel = relLabel(item.iso, todayStr);
   var peopleHtml = item.people.map(function(p){ return '<span class="person-tag">'+esc(p)+'</span>'; }).join("");
+  var icsEv = {
+    iso: item.iso,
+    time: normalizeTimeTo24h(item.time),
+    durationMin: CAT_DURATION_MIN[item.cat],
+    title: item.title,
+    location: item.raw.place || item.raw.host || null,
+    description: (item.people.join(", ") || "") + (item.subtitle ? (item.people.length ? " — " : "") + item.subtitle : ""),
+  };
   return '' +
     '<div class="card clickable" style="border-top-color:'+c.color+'" data-open-item="'+item.key+'">' +
       pinHtml(c.color) +
       '<div class="card-header-row" style="justify-content:space-between">' +
         '<span class="date-stamp">'+esc(fmtShort(item.iso))+'</span>' +
-        (rel ? '<span class="rel-badge" style="background:'+c.color+'">'+esc(rel)+'</span>' : '') +
+        (rel ? '<span class="rel-badge">'+esc(rel)+'</span>' : '') +
       '</div>' +
       '<div class="cat-label">'+esc(c.label)+' <span class="sub-faint">· '+esc(c.sub)+'</span></div>' +
       '<div class="card-title">'+esc(item.title)+'</div>' +
       (item.subtitle ? '<div class="card-sub">'+esc(item.subtitle)+'</div>' : '') +
       '<div class="card-foot">' + (item.time ? '<span class="time-tag">'+esc(item.time)+'</span>' : '') + peopleHtml + '</div>' +
+      registerIcs(item.key, icsEv) +
     '</div>';
 }
 
@@ -397,10 +607,19 @@ function fieldServiceCardHtml(e, key, expanded) {
   var c = CATS.fieldService;
   var detailsHtml = '';
   if (expanded) {
+    var icsEv = {
+      iso: e.iso,
+      time: normalizeTimeTo24h(e.time),
+      durationMin: CAT_DURATION_MIN.fieldService,
+      title: e.place || "क्षेत्र सेवा",
+      location: e.place || null,
+      description: (e.areas ? "इलाका: " + e.areas.replace(/\n/g, ", ") : "") + (e.conductor ? (e.areas ? " | " : "") + "संचालक भाइ: " + e.conductor : ""),
+    };
     detailsHtml = '<div class="agenda">' +
       (e.mapLink ? '<a class="map-link" href="'+esc(e.mapLink)+'" target="_blank" rel="noreferrer">नक्सा हेर्नुहोस् ↗</a>' : '') +
       (e.areas ? '<div class="areas-text">'+areasHtml(e)+'</div>' : '') +
       (e.conductor ? '<div class="card-foot"><span class="role-label">संचालक भाइ</span><span class="person-tag">'+esc(e.conductor)+'</span></div>' : '') +
+      registerIcs(key, icsEv) +
     '</div>';
   }
   return '' +
@@ -421,13 +640,24 @@ function roleItemHtml(label, value) {
   return '<div class="role-item"><span class="role-label">'+esc(label)+'</span><span class="person-tag">'+esc(value)+'</span></div>';
 }
 
-function publicTalkCardHtml(t) {
+function publicTalkCardHtml(t, i) {
   var c = CATS.publicTalks;
   var roles = '';
   if (t.speaker) roles += roleItemHtml("वक्ता", t.speaker);
   if (t.chairman) roles += roleItemHtml("चेयरम्यान", t.chairman);
   if (t.wtConductor) roles += roleItemHtml("प्र.ध.संचालक", t.wtConductor);
   if (t.reader) roles += roleItemHtml("पढने भाइ", t.reader);
+  var peopleForDesc = [t.speaker, t.chairman, t.wtConductor, t.reader].filter(Boolean).join(", ");
+  var icsBtn = '';
+  if (t.iso) {
+    icsBtn = registerIcs("pt-" + i, {
+      iso: t.iso,
+      time: null, // no time captured in the source sheet for public talks — all-day event
+      title: t.topicNp || "जनभाषण",
+      location: t.host || null,
+      description: peopleForDesc + (t.topicJp ? (peopleForDesc ? " — " : "") + t.topicJp : ""),
+    });
+  }
   return '' +
     '<div class="card" style="border-top-color:'+c.color+'">' +
       pinHtml(c.color) +
@@ -439,21 +669,35 @@ function publicTalkCardHtml(t) {
       (t.host ? '<div class="areas-text">अतिथिसत्कार / मण्डली: '+esc(t.host)+'</div>' : '') +
       '<div class="role-grid">'+roles+'</div>' +
       (t.otherNote ? '<div class="note-text">'+esc(t.otherNote)+'</div>' : '') +
+      icsBtn +
     '</div>';
 }
 
 function lifeMinistryWeekHtml(w, weekKey, expanded) {
   var c = CATS.lifeMinistry;
   if (w.special) {
+    var specialIcs = w.iso ? registerIcs(weekKey, {
+      iso: w.iso, time: null, title: w.special, location: null, description: "",
+    }) : '';
     return '' +
       '<div class="card lm-card" style="border-top-color:'+c.color+'">' +
         pinHtml(c.color) +
         '<div class="card-header-row"><span class="date-stamp">'+esc(w.dateRaw)+' '+esc(w.monthLabel)+'</span></div>' +
         '<div class="special-banner">'+esc(w.special)+'</div>' +
+        specialIcs +
       '</div>';
   }
   var agendaHtml = '';
   if (expanded) {
+    var firstTime = w.items && w.items[0] ? normalizeTimeTo24h(w.items[0].time) : null;
+    var icsEv = {
+      iso: w.iso,
+      time: firstTime,
+      durationMin: CAT_DURATION_MIN.lifeMinistry,
+      title: "हाम्रो ख्रिष्टियन जीवन र सेवा सभा",
+      location: null,
+      description: w.chairman ? "अध्यक्ष: " + w.chairman : "",
+    };
     agendaHtml = '<div class="agenda">' + w.items.map(function(it) {
       var isHeader = SECTION_HEADERS[(it.text||"").trim()];
       return '<div class="'+(isHeader?"agenda-section":"agenda-row")+'">' +
@@ -461,7 +705,7 @@ function lifeMinistryWeekHtml(w, weekKey, expanded) {
         '<span class="'+(isHeader?"agenda-section-text":"agenda-text")+'">'+esc(it.text)+'</span>' +
         (it.assignee ? '<span class="agenda-assignee">'+esc(it.assignee)+'</span>' : '') +
       '</div>';
-    }).join("") + '</div>';
+    }).join("") + '</div>' + registerIcs(weekKey, icsEv);
   }
   return '' +
     '<div class="card lm-card clickable" style="border-top-color:'+c.color+'" data-toggle-week="'+weekKey+'">' +
@@ -475,8 +719,19 @@ function lifeMinistryWeekHtml(w, weekKey, expanded) {
     '</div>';
 }
 
-function searchResultCardHtml(r) {
+function searchResultCardHtml(r, i) {
   var c = CATS[r.cat];
+  var icsBtn = '';
+  if (r.iso) {
+    icsBtn = registerIcs("sr-" + i + "-" + r.iso, {
+      iso: r.iso,
+      time: normalizeTimeTo24h(r.time),
+      durationMin: CAT_DURATION_MIN[r.cat],
+      title: r.context || r.role,
+      location: null,
+      description: r.role + ": " + r.name,
+    });
+  }
   return '' +
     '<div class="card" style="border-top-color:'+c.color+'">' +
       pinHtml(c.color) +
@@ -486,6 +741,7 @@ function searchResultCardHtml(r) {
       '</div>' +
       '<div class="card-title">'+esc(r.name)+'</div>' +
       '<div class="role-grid">'+roleItemHtml(r.role, r.context)+'</div>' +
+      icsBtn +
     '</div>';
 }
 
@@ -526,6 +782,33 @@ document.getElementById("textSizeUp").addEventListener("click", function() {
   currentTextScale = applyTextScale(Math.round((currentTextScale + TEXT_SCALE_STEP) * 10) / 10);
 });
 
+/* ---------- Dark mode toggle ---------- */
+var THEME_KEY = "programDashboardTheme";
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute("data-theme", theme);
+  var btn = document.getElementById("themeToggle");
+  if (btn) btn.textContent = theme === "dark" ? "☀️" : "🌙";
+  try { localStorage.setItem(THEME_KEY, theme); } catch (_) {}
+  return theme;
+}
+
+function loadTheme() {
+  var saved = null;
+  try { saved = localStorage.getItem(THEME_KEY); } catch (_) {}
+  if (saved !== "dark" && saved !== "light") {
+    // No saved preference yet — default to the device's own dark/light setting.
+    saved = (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) ? "dark" : "light";
+  }
+  return applyTheme(saved);
+}
+
+var currentTheme = loadTheme(); // applied immediately, even before sign-in
+
+document.getElementById("themeToggle").addEventListener("click", function() {
+  currentTheme = applyTheme(currentTheme === "dark" ? "light" : "dark");
+});
+
 /* ---------- Render ---------- */
 var todayStr = todayIso();
 var feedCache = null, searchIdxCache = null, openItemLookup = {};
@@ -555,7 +838,9 @@ function renderTabs() {
   if (state.tab === "search") { tabsEl.classList.add("hidden"); return; }
   tabsEl.classList.remove("hidden");
   var defs = [
+    ["thisWeek","यो हप्ता","This Week"],
     ["upcoming","आगामी","Upcoming"],
+    ["myProgram","मेरो कार्यक्रम","My Assignments"],
     ["fieldService",CATS.fieldService.label,CATS.fieldService.sub],
     ["lifeMinistry",CATS.lifeMinistry.label,CATS.lifeMinistry.sub],
     ["publicTalks",CATS.publicTalks.label,CATS.publicTalks.sub],
@@ -592,6 +877,62 @@ function renderMain() {
       (results.length === 0 ? '<div class="empty-state">"'+esc(state.query)+'" सँग मिल्ने कुनै जिम्मेवारी भेटिएन।</div>' : '') +
       results.map(searchResultCardHtml).join("") +
     '</div>';
+    return;
+  }
+
+  if (state.tab === "myProgram") {
+    var myName = getMyName();
+    if (!myName) {
+      main.innerHTML =
+        '<div class="my-name-setup">' +
+          '<div class="my-name-title">तपाईंको नाम राख्नुहोस्</div>' +
+          '<div class="my-name-hint">एकपटक राखेपछि, तपाईं संचालक/वक्ता/चेयरम्यान/असाइनमेन्ट भएका सबै कार्यक्रम यहाँ देख्नुहुनेछ।</div>' +
+          '<div class="my-name-row">' +
+            '<input class="search-input" id="myNameInput" placeholder="जस्तै: मासाया यामानासी">' +
+            '<button class="primary-btn" id="myNameSaveBtn">सेभ गर्नुहोस्</button>' +
+          '</div>' +
+        '</div>';
+      var saveBtn = document.getElementById("myNameSaveBtn");
+      var input = document.getElementById("myNameInput");
+      if (saveBtn) saveBtn.addEventListener("click", function() {
+        if (input.value.trim()) { setMyName(input.value.trim()); renderMain(); }
+      });
+      if (input) input.addEventListener("keydown", function(e) {
+        if (e.key === "Enter" && input.value.trim()) { setMyName(input.value.trim()); renderMain(); }
+      });
+      return;
+    }
+    if (!searchIdxCache) searchIdxCache = buildSearchIndex();
+    var q = myName.trim().toLowerCase();
+    var mine = searchIdxCache.filter(function(r){ return r.name.toLowerCase().indexOf(q) !== -1; });
+    mine.sort(function(a,b){ return a.iso < b.iso ? -1 : a.iso > b.iso ? 1 : 0; });
+    main.innerHTML =
+      '<div class="my-name-bar">' +
+        '<span>तपाईं: <strong>'+esc(myName)+'</strong></span>' +
+        '<button class="link-btn" id="myNameChangeBtn">बदल्नुहोस्</button>' +
+      '</div>' +
+      '<div class="grid">' +
+      (mine.length === 0 ? '<div class="empty-state">"'+esc(myName)+'" सँग मिल्ने कुनै जिम्मेवारी भेटिएन।</div>' : '') +
+      mine.map(searchResultCardHtml).join("") +
+      '</div>';
+    var changeBtn = document.getElementById("myNameChangeBtn");
+    if (changeBtn) changeBtn.addEventListener("click", function() { clearMyName(); renderMain(); });
+    return;
+  }
+
+  if (state.tab === "thisWeek") {
+    if (!feedCache) feedCache = buildFeed();
+    var bounds = thisWeekBounds();
+    var weekItems = feedCache.filter(function(f){ return f.iso >= bounds.start && f.iso <= bounds.end; });
+    openItemLookup = {}; weekItems.forEach(function(it){ openItemLookup[it.key] = it; });
+    main.innerHTML =
+      '<div style="margin-bottom:10px;font-size:calc(13px * var(--text-scale));color:var(--ink-muted)">' +
+        esc(fmtShort(bounds.start)) + ' – ' + esc(fmtShort(bounds.end)) +
+      '</div>' +
+      '<div class="grid">' +
+      (weekItems.length === 0 ? '<div class="empty-state">यो हप्ता कुनै कार्यक्रम भेटिएन।</div>' : '') +
+      weekItems.map(function(it){ return feedCardHtml(it, todayStr); }).join("") +
+      '</div>';
     return;
   }
 
@@ -655,6 +996,13 @@ function closeModal() { document.getElementById("modalBackdrop").classList.add("
 /* ---------- Event delegation ---------- */
 document.addEventListener("click", function(e) {
   if (e.target.closest("a")) return; // let map/area links navigate normally
+
+  var icsBtn = e.target.closest("[data-add-ics]");
+  if (icsBtn) {
+    var icsKey = icsBtn.getAttribute("data-add-ics");
+    if (icsLookup[icsKey]) downloadIcs(icsLookup[icsKey]);
+    return;
+  }
 
   var tabBtn = e.target.closest("[data-tab]");
   if (tabBtn) { state.tab = tabBtn.getAttribute("data-tab"); render(); return; }
@@ -735,14 +1083,29 @@ function handleCredentialResponse(response) {
    AUTO-REFRESH — quietly re-fetches data every 30 minutes so
    the dashboard stays current without needing a manual reload.
    Matches the backend's CACHE_SECONDS in Code.gs.
+
+   IMPORTANT CAVEAT: setInterval alone is not reliable on
+   phones — iOS Safari (and most mobile browsers) suspend
+   JavaScript timers for tabs that aren't actively on screen
+   (backgrounded app, locked phone, switched tabs). So on top
+   of the interval, we also catch up whenever the page becomes
+   visible again, which is what actually matters: the data is
+   fresh by the time someone is actually looking at it.
    ============================================================ */
 var lastIdToken = null;
 var autoRefreshTimer = null;
 var AUTO_REFRESH_MS = 30 * 60 * 1000;
+var lastRefreshAt = 0;
 
 function startAutoRefresh() {
+  lastRefreshAt = Date.now();
   if (autoRefreshTimer) return;
   autoRefreshTimer = setInterval(silentRefresh, AUTO_REFRESH_MS);
+  document.addEventListener("visibilitychange", function() {
+    if (document.visibilityState === "visible" && Date.now() - lastRefreshAt >= AUTO_REFRESH_MS) {
+      silentRefresh();
+    }
+  });
 }
 
 function silentRefresh() {
@@ -751,7 +1114,18 @@ function silentRefresh() {
   fetch(url)
     .then(function(res) { return res.json(); })
     .then(function(json) {
-      if (!json || json.error) return; // token may have expired; skip quietly, next timer tick tries again
+      if (!json || json.error) {
+        // Token has likely expired (Google ID tokens last ~1 hour).
+        // Try to silently get a fresh one from Google — if the person
+        // is still signed into their Google account in this browser,
+        // this succeeds without any click and re-triggers
+        // handleCredentialResponse with a new token automatically.
+        if (window.google && google.accounts && google.accounts.id) {
+          google.accounts.id.prompt();
+        }
+        return;
+      }
+      lastRefreshAt = Date.now();
       DATA = json;
       feedCache = null;
       searchIdxCache = null;
