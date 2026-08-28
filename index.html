@@ -119,6 +119,13 @@
   .today-label { font-family: 'IBM Plex Mono', monospace; font-size: calc(10px * var(--text-scale)); letter-spacing: 1px; opacity: .7; }
   .today-date { font-size: calc(14px * var(--text-scale)); font-weight: 600; margin-top: 2px; }
 
+  .next-banner { max-width: 1100px; margin: 0 auto 14px; background: var(--ink-strong); color: var(--ink-on-strong); border-radius: 14px; padding: 16px 18px; }
+  .next-banner-eyebrow { font-family: 'IBM Plex Mono', monospace; font-size: calc(10.5px * var(--text-scale)); letter-spacing: .8px; text-transform: uppercase; opacity: .75; margin-bottom: 6px; }
+  .next-banner-title { font-family: 'Fraunces', serif; font-weight: 600; font-size: calc(19px * var(--text-scale)); margin-bottom: 4px; }
+  .next-banner-meta { font-size: calc(13px * var(--text-scale)); opacity: .9; }
+  .next-banner-foot { margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .next-banner .ics-btn { background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.22); color: var(--ink-on-strong); }
+  .next-banner-cta { max-width: 1100px; margin: 0 auto 14px; background: var(--chip-bg2); border: 1px dashed var(--border-strong); border-radius: 12px; padding: 12px 16px; font-size: calc(13px * var(--text-scale)); color: var(--ink-muted); display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
   .sync-bar { max-width: 1100px; margin: 0 auto 12px; background: var(--sync-bg); color: var(--sync-text); border-radius: 8px; padding: 8px 14px; font-size: calc(12.5px * var(--text-scale)); }
   .err-bar { max-width: 1100px; margin: 0 auto 12px; background: var(--danger-bg); color: var(--danger-text); border-radius: 8px; padding: 8px 14px; font-size: calc(12.5px * var(--text-scale)); }
 
@@ -333,6 +340,8 @@
     </div>
   </header>
 
+  <div id="nextAssignmentBanner"></div>
+
   <div class="sync-bar" id="syncBar"></div>
   <div class="err-bar hidden" id="errBar"></div>
 
@@ -370,7 +379,7 @@ var CATS = {
 var NEPALI_MONTHS_EN = { "01":"January","02":"February","03":"March","04":"April","05":"May","06":"June","07":"July","08":"August","09":"September","10":"October","11":"November","12":"December" };
 var SECTION_HEADERS = { "बाइबलमा पाइने अनमोल धन":1, "कुराकानी गर्ने सीप तिखारौँ":1, "ख्रीष्टियन जीवन":1 };
 
-var state = { tab: "thisWeek", month: null, query: "", expandedWeeks: {}, expandedFS: {}, openItem: null };
+var state = { tab: "upcoming", month: null, query: "", expandedWeeks: {}, expandedFS: {}, openItem: null };
 
 function monthLabel(ymKey) {
   var parts = ymKey.split("-");
@@ -392,13 +401,6 @@ function relLabel(iso, todayStr) {
   return null;
 }
 function isoOf(d) { return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0"); }
-function thisWeekBounds() {
-  var d = new Date();
-  var day = d.getDay(); // 0 = Sunday
-  var start = new Date(d); start.setDate(d.getDate() - day);
-  var end = new Date(d); end.setDate(d.getDate() + (6 - day));
-  return { start: isoOf(start), end: isoOf(end) };
-}
 var MY_NAME_KEY = "programDashboardMyName";
 function getMyName() {
   try { return localStorage.getItem(MY_NAME_KEY); } catch (_) { return null; }
@@ -813,6 +815,53 @@ document.getElementById("themeToggle").addEventListener("click", function() {
 var todayStr = todayIso();
 var feedCache = null, searchIdxCache = null, openItemLookup = {};
 
+function getNextAssignment() {
+  var myName = getMyName();
+  if (!myName) return null;
+  if (!searchIdxCache) searchIdxCache = buildSearchIndex();
+  var q = myName.trim().toLowerCase();
+  var mine = searchIdxCache.filter(function(r) { return r.iso && r.iso >= todayStr && r.name.toLowerCase().indexOf(q) !== -1; });
+  mine.sort(function(a, b) { return a.iso < b.iso ? -1 : a.iso > b.iso ? 1 : 0; });
+  return mine[0] || null;
+}
+
+function renderNextAssignmentBanner() {
+  var el = document.getElementById("nextAssignmentBanner");
+  var myName = getMyName();
+
+  if (!myName) {
+    el.innerHTML =
+      '<div class="next-banner-cta">' +
+        '<span>आफ्नो जिम्मेवारी यहीँ हेर्न चाहनुहुन्छ? आफ्नो नाम राख्नुहोस्।</span>' +
+        '<button class="link-btn" data-tab="myProgram">मेरो कार्यक्रम खोल्नुहोस् →</button>' +
+      '</div>';
+    return;
+  }
+
+  var next = getNextAssignment();
+  if (!next) { el.innerHTML = ""; return; }
+
+  var rel = relLabel(next.iso, todayStr);
+  var icsEv = {
+    iso: next.iso,
+    time: normalizeTimeTo24h(next.time),
+    durationMin: CAT_DURATION_MIN[next.cat],
+    title: next.context || next.role,
+    location: null,
+    description: next.role + ": " + next.name,
+  };
+  el.innerHTML =
+    '<div class="next-banner">' +
+      '<div class="next-banner-eyebrow">तपाईंको आगामी जिम्मेवारी · Your next assignment</div>' +
+      '<div class="next-banner-title">' + esc(next.context || next.role) + '</div>' +
+      '<div class="next-banner-meta">' + esc(fmtFull(next.iso)) + (rel ? ' · ' + esc(rel) : '') + (next.time ? ' · ' + esc(next.time) : '') + '</div>' +
+      '<div class="next-banner-foot">' +
+        '<span class="person-tag" style="background:rgba(255,255,255,.14);color:inherit">' + esc(next.role) + '</span>' +
+        registerIcs("nextbanner", icsEv) +
+      '</div>' +
+    '</div>';
+}
+
 function render() {
   document.getElementById("todayDate").textContent = fmtFull(todayStr);
 
@@ -828,6 +877,7 @@ function render() {
     errBar.classList.add("hidden");
   }
 
+  renderNextAssignmentBanner();
   renderTabs();
   renderMonthTabs();
   renderMain();
@@ -838,7 +888,6 @@ function renderTabs() {
   if (state.tab === "search") { tabsEl.classList.add("hidden"); return; }
   tabsEl.classList.remove("hidden");
   var defs = [
-    ["thisWeek","यो हप्ता","This Week"],
     ["upcoming","आगामी","Upcoming"],
     ["myProgram","मेरो कार्यक्रम","My Assignments"],
     ["fieldService",CATS.fieldService.label,CATS.fieldService.sub],
@@ -895,10 +944,10 @@ function renderMain() {
       var saveBtn = document.getElementById("myNameSaveBtn");
       var input = document.getElementById("myNameInput");
       if (saveBtn) saveBtn.addEventListener("click", function() {
-        if (input.value.trim()) { setMyName(input.value.trim()); renderMain(); }
+        if (input.value.trim()) { setMyName(input.value.trim()); render(); }
       });
       if (input) input.addEventListener("keydown", function(e) {
-        if (e.key === "Enter" && input.value.trim()) { setMyName(input.value.trim()); renderMain(); }
+        if (e.key === "Enter" && input.value.trim()) { setMyName(input.value.trim()); render(); }
       });
       return;
     }
@@ -916,23 +965,7 @@ function renderMain() {
       mine.map(searchResultCardHtml).join("") +
       '</div>';
     var changeBtn = document.getElementById("myNameChangeBtn");
-    if (changeBtn) changeBtn.addEventListener("click", function() { clearMyName(); renderMain(); });
-    return;
-  }
-
-  if (state.tab === "thisWeek") {
-    if (!feedCache) feedCache = buildFeed();
-    var bounds = thisWeekBounds();
-    var weekItems = feedCache.filter(function(f){ return f.iso >= bounds.start && f.iso <= bounds.end; });
-    openItemLookup = {}; weekItems.forEach(function(it){ openItemLookup[it.key] = it; });
-    main.innerHTML =
-      '<div style="margin-bottom:10px;font-size:calc(13px * var(--text-scale));color:var(--ink-muted)">' +
-        esc(fmtShort(bounds.start)) + ' – ' + esc(fmtShort(bounds.end)) +
-      '</div>' +
-      '<div class="grid">' +
-      (weekItems.length === 0 ? '<div class="empty-state">यो हप्ता कुनै कार्यक्रम भेटिएन।</div>' : '') +
-      weekItems.map(function(it){ return feedCardHtml(it, todayStr); }).join("") +
-      '</div>';
+    if (changeBtn) changeBtn.addEventListener("click", function() { clearMyName(); render(); });
     return;
   }
 
