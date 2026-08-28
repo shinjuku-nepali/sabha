@@ -1,6 +1,6 @@
 {
   "name": "मण्डलीको कार्यक्रम",
-  "short_name": "कार्यक्रम",
+  "short_name": "मण्डलीको कार्यक्रम",
   "description": "Congregation program dashboard — Field Service, Life & Ministry, and Public Talk schedules in one place.",
   "start_url": "./index.html",
   "scope": "./",
