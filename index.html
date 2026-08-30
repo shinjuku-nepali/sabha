@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="मण्डलीको  कार्यक्रम">
+<meta name="apple-mobile-web-app-title" content="मण्डली कार्यक्रम">
 <meta name="theme-color" content="#1F2A24">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -109,6 +109,11 @@
   h1 { font-family: 'Fraunces', serif; font-weight: 600; font-size: calc(34px * var(--text-scale)); margin: 0; color: var(--ink-strong); }
   .header-sub { font-size: calc(13px * var(--text-scale)); color: var(--ink-muted); margin-top: 6px; }
   .today-badge { background: var(--ink-strong); color: var(--ink-on-strong); border-radius: 10px; padding: 10px 16px; min-width: 180px; }
+  .settings-toggle { border: 1px solid var(--border-strong); background: var(--surface); color: var(--ink); border-radius: 999px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  .settings-panel { position: absolute; top: calc(100% + 8px); right: 0; background: var(--surface); border: 1px solid var(--border-strong); border-radius: 14px; padding: 14px; box-shadow: 0 8px 24px var(--shadow-1), 0 2px 8px var(--shadow-2); z-index: 40; min-width: 220px; }
+  .settings-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 6px 2px; }
+  .settings-row + .settings-row { border-top: 1px solid var(--border-soft); margin-top: 4px; padding-top: 10px; }
+  .settings-label { font-size: calc(13px * var(--text-scale)); color: var(--ink-muted); }
   .theme-toggle { border: 1px solid var(--border-strong); background: var(--surface); color: var(--ink); border-radius: 999px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 17px; }
   .text-size-toggle { display: flex; align-items: center; gap: 2px; background: var(--surface); border: 1px solid var(--border-strong); border-radius: 999px; padding: 3px; }
   .text-size-btn { border: none; background: transparent; color: var(--ink); border-radius: 999px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-family: 'Fraunces', serif; font-weight: 700; -webkit-appearance: none; appearance: none; }
@@ -323,16 +328,25 @@
     <div>
       <h1>मण्डलीको कार्यक्रम</h1>
     </div>
-    <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-      <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="डार्क मोड">🌙</button>
-      <div class="text-size-toggle" role="group" aria-label="Text size">
-        <button class="text-size-btn" id="textSizeDown" aria-label="Decrease text size" title="अक्षर सानो पार्नुहोस्">A</button>
-        <span class="text-size-pct" id="textSizePct">100%</span>
-        <button class="text-size-btn" id="textSizeUp" aria-label="Increase text size" title="अक्षर ठूलो पार्नुहोस्">A</button>
-      </div>
+    <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; position:relative;">
       <div class="today-badge">
         <div class="today-label">आज</div>
         <div class="today-date" id="todayDate"></div>
+      </div>
+      <button class="settings-toggle" id="settingsToggle" aria-label="Settings" title="सेटिङ">⚙</button>
+      <div class="settings-panel hidden" id="settingsPanel">
+        <div class="settings-row">
+          <span class="settings-label">डार्क मोड</span>
+          <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="डार्क मोड">🌙</button>
+        </div>
+        <div class="settings-row">
+          <span class="settings-label">अक्षर साइज</span>
+          <div class="text-size-toggle" role="group" aria-label="Text size">
+            <button class="text-size-btn" id="textSizeDown" aria-label="Decrease text size" title="अक्षर सानो पार्नुहोस्">A</button>
+            <span class="text-size-pct" id="textSizePct">100%</span>
+            <button class="text-size-btn" id="textSizeUp" aria-label="Increase text size" title="अक्षर ठूलो पार्नुहोस्">A</button>
+          </div>
+        </div>
       </div>
     </div>
   </header>
@@ -661,6 +675,19 @@ var currentTheme = loadTheme(); // applied immediately, even before sign-in
 
 document.getElementById("themeToggle").addEventListener("click", function() {
   currentTheme = applyTheme(currentTheme === "dark" ? "light" : "dark");
+});
+
+/* ---------- Settings panel ---------- */
+document.getElementById("settingsToggle").addEventListener("click", function(e) {
+  e.stopPropagation();
+  document.getElementById("settingsPanel").classList.toggle("hidden");
+});
+document.addEventListener("click", function(e) {
+  var panel = document.getElementById("settingsPanel");
+  var toggle = document.getElementById("settingsToggle");
+  if (!panel.classList.contains("hidden") && !panel.contains(e.target) && e.target !== toggle) {
+    panel.classList.add("hidden");
+  }
 });
 
 /* ---------- Render ---------- */
