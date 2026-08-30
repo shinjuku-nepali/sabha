@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="मण्डली कार्यक्रम">
+<meta name="apple-mobile-web-app-title" content="मण्डलीको  कार्यक्रम">
 <meta name="theme-color" content="#1F2A24">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -124,7 +124,6 @@
   .next-banner-title { font-family: 'Fraunces', serif; font-weight: 600; font-size: calc(19px * var(--text-scale)); margin-bottom: 4px; }
   .next-banner-meta { font-size: calc(13px * var(--text-scale)); opacity: .9; }
   .next-banner-foot { margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-  .next-banner .ics-btn { background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.22); color: var(--ink-on-strong); }
   .next-banner-cta { max-width: 1100px; margin: 0 auto 14px; background: var(--chip-bg2); border: 1px dashed var(--border-strong); border-radius: 12px; padding: 12px 16px; font-size: calc(13px * var(--text-scale)); color: var(--ink-muted); display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
   .sync-bar { max-width: 1100px; margin: 0 auto 12px; background: var(--sync-bg); color: var(--sync-text); border-radius: 8px; padding: 8px 14px; font-size: calc(12.5px * var(--text-scale)); }
   .err-bar { max-width: 1100px; margin: 0 auto 12px; background: var(--danger-bg); color: var(--danger-text); border-radius: 8px; padding: 8px 14px; font-size: calc(12.5px * var(--text-scale)); }
@@ -178,8 +177,6 @@
   .jp-text { font-size: calc(12px * var(--text-scale)); color: var(--ink-faint); margin-bottom: 4px; }
   .note-text { font-size: calc(12px * var(--text-scale)); color: var(--ink-faint); margin-top: 8px; font-style: italic; }
   .map-link { font-size: calc(12px * var(--text-scale)); color: var(--cat-blue); text-decoration: none; font-weight: 600; display: inline-block; margin-bottom: 6px; }
-  .ics-btn { font-size: calc(11.5px * var(--text-scale)); color: var(--ink-muted); background: var(--chip-bg2); border: 1px solid var(--border-soft); border-radius: 999px; padding: 6px 12px; margin-top: 8px; display: inline-block; }
-  .ics-btn:active { background: var(--border-soft); }
 
   .role-grid { display: flex; flex-wrap: wrap; gap: 8px 14px; margin-top: 10px; }
   .role-item { display: flex; flex-direction: column; gap: 3px; }
@@ -418,96 +415,6 @@ function esc(str) {
   });
 }
 
-/* ============================================================
-   ADD TO CALENDAR — builds a .ics file for a single event and
-   hands it to the phone's calendar app. Works with either a
-   specific time (field service, Life & Ministry) or falls back
-   to an all-day event when no time is known (public talks).
-   ============================================================ */
-var CAT_DURATION_MIN = { fieldService: 120, lifeMinistry: 105, publicTalks: 90 };
-var icsLookup = {};
-
-// Accepts either "AM10:00"/"PM5:30" (field service) or already
-// 24-hour "HH:MM" (Life & Ministry) and returns 24-hour "HH:MM".
-function normalizeTimeTo24h(raw) {
-  if (!raw) return null;
-  raw = String(raw).trim();
-  var ampm = raw.match(/^([AP])M\s*(\d{1,2}):(\d{2})$/i);
-  if (ampm) {
-    var isPM = ampm[1].toUpperCase() === "P";
-    var h = parseInt(ampm[2], 10) % 12;
-    if (isPM) h += 12;
-    return String(h).padStart(2, "0") + ":" + ampm[3];
-  }
-  var h24 = raw.match(/^(\d{1,2}):(\d{2})$/);
-  if (h24) return String(parseInt(h24[1], 10)).padStart(2, "0") + ":" + h24[2];
-  return null;
-}
-
-function icsEscape(str) {
-  return String(str || "").replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\n/g, "\\n");
-}
-
-// ev: { iso, time (optional "HH:MM" 24h, null = all-day), durationMin, title, location, description }
-function buildIcs(ev) {
-  var uid = "programdashboard-" + ev.iso + "-" + Math.random().toString(36).slice(2) + "@congregation";
-  var now = new Date();
-  var dtstamp = now.getUTCFullYear() + String(now.getUTCMonth()+1).padStart(2,"0") + String(now.getUTCDate()).padStart(2,"0") +
-    "T" + String(now.getUTCHours()).padStart(2,"0") + String(now.getUTCMinutes()).padStart(2,"0") + String(now.getUTCSeconds()).padStart(2,"0") + "Z";
-  var isoCompact = ev.iso.replace(/-/g, "");
-  var lines = ["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Program Dashboard//EN","CALSCALE:GREGORIAN","METHOD:PUBLISH","BEGIN:VEVENT","UID:"+uid,"DTSTAMP:"+dtstamp];
-
-  if (ev.time) {
-    var parts = ev.time.split(":");
-    var h = parseInt(parts[0], 10), m = parseInt(parts[1], 10);
-    var dur = ev.durationMin || 60;
-    var endMin = h * 60 + m + dur;
-    var eh = Math.floor(endMin / 60) % 24, em = endMin % 60;
-    lines.push("DTSTART:" + isoCompact + "T" + String(h).padStart(2,"0") + String(m).padStart(2,"0") + "00");
-    lines.push("DTEND:" + isoCompact + "T" + String(eh).padStart(2,"0") + String(em).padStart(2,"0") + "00");
-  } else {
-    var d = toDateObj(ev.iso);
-    var next = new Date(d); next.setDate(d.getDate() + 1);
-    lines.push("DTSTART;VALUE=DATE:" + isoCompact);
-    lines.push("DTEND;VALUE=DATE:" + isoOf(next).replace(/-/g, ""));
-  }
-
-  lines.push("SUMMARY:" + icsEscape(ev.title));
-  if (ev.location) lines.push("LOCATION:" + icsEscape(ev.location));
-  if (ev.description) lines.push("DESCRIPTION:" + icsEscape(ev.description));
-  lines.push("END:VEVENT", "END:VCALENDAR");
-  return lines.join("\r\n");
-}
-
-function downloadIcs(ev) {
-  var ics = buildIcs(ev);
-  var blob = new Blob([ics], { type: "text/calendar;charset=utf-8" });
-  var url = URL.createObjectURL(blob);
-  // Deliberately no "download" attribute: on iOS/iPadOS Safari, a plain
-  // navigation to a text/calendar blob opens the native "Add to
-  // Calendar" sheet directly. Adding "download" instead forces a file
-  // save on some browsers, which skips that native prompt.
-  var a = document.createElement("a");
-  a.href = url;
-  a.target = "_blank";
-  a.rel = "noopener";
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  setTimeout(function() { URL.revokeObjectURL(url); }, 4000);
-}
-
-function icsButtonHtml(key) {
-  return '<button class="ics-btn" data-add-ics="'+key+'">📅 क्यालेन्डरमा थप्नुहोस्</button>';
-}
-
-// Renders the ics button AND registers its event descriptor in
-// icsLookup under the given key, so the click handler can find it.
-function registerIcs(key, ev) {
-  icsLookup[key] = ev;
-  return icsButtonHtml(key);
-}
-
 // Renders the इलाका (areas) cell, preserving per-line hyperlinks if the
 // spreadsheet has any (e.g. "Okubo①-1" linking to a map). Falls back to
 // plain text when there are no links.
@@ -582,14 +489,6 @@ function feedCardHtml(item, todayStr) {
   var c = CATS[item.cat];
   var rel = relLabel(item.iso, todayStr);
   var peopleHtml = item.people.map(function(p){ return '<span class="person-tag">'+esc(p)+'</span>'; }).join("");
-  var icsEv = {
-    iso: item.iso,
-    time: normalizeTimeTo24h(item.time),
-    durationMin: CAT_DURATION_MIN[item.cat],
-    title: item.title,
-    location: item.raw.place || item.raw.host || null,
-    description: (item.people.join(", ") || "") + (item.subtitle ? (item.people.length ? " — " : "") + item.subtitle : ""),
-  };
   return '' +
     '<div class="card clickable" style="border-top-color:'+c.color+'" data-open-item="'+item.key+'">' +
       pinHtml(c.color) +
@@ -601,7 +500,6 @@ function feedCardHtml(item, todayStr) {
       '<div class="card-title">'+esc(item.title)+'</div>' +
       (item.subtitle ? '<div class="card-sub">'+esc(item.subtitle)+'</div>' : '') +
       '<div class="card-foot">' + (item.time ? '<span class="time-tag">'+esc(item.time)+'</span>' : '') + peopleHtml + '</div>' +
-      registerIcs(item.key, icsEv) +
     '</div>';
 }
 
@@ -609,19 +507,10 @@ function fieldServiceCardHtml(e, key, expanded) {
   var c = CATS.fieldService;
   var detailsHtml = '';
   if (expanded) {
-    var icsEv = {
-      iso: e.iso,
-      time: normalizeTimeTo24h(e.time),
-      durationMin: CAT_DURATION_MIN.fieldService,
-      title: e.place || "क्षेत्र सेवा",
-      location: e.place || null,
-      description: (e.areas ? "इलाका: " + e.areas.replace(/\n/g, ", ") : "") + (e.conductor ? (e.areas ? " | " : "") + "संचालक भाइ: " + e.conductor : ""),
-    };
     detailsHtml = '<div class="agenda">' +
       (e.mapLink ? '<a class="map-link" href="'+esc(e.mapLink)+'" target="_blank" rel="noreferrer">नक्सा हेर्नुहोस् ↗</a>' : '') +
       (e.areas ? '<div class="areas-text">'+areasHtml(e)+'</div>' : '') +
       (e.conductor ? '<div class="card-foot"><span class="role-label">संचालक भाइ</span><span class="person-tag">'+esc(e.conductor)+'</span></div>' : '') +
-      registerIcs(key, icsEv) +
     '</div>';
   }
   return '' +
@@ -649,17 +538,6 @@ function publicTalkCardHtml(t, i) {
   if (t.chairman) roles += roleItemHtml("चेयरम्यान", t.chairman);
   if (t.wtConductor) roles += roleItemHtml("प्र.ध.संचालक", t.wtConductor);
   if (t.reader) roles += roleItemHtml("पढने भाइ", t.reader);
-  var peopleForDesc = [t.speaker, t.chairman, t.wtConductor, t.reader].filter(Boolean).join(", ");
-  var icsBtn = '';
-  if (t.iso) {
-    icsBtn = registerIcs("pt-" + i, {
-      iso: t.iso,
-      time: null, // no time captured in the source sheet for public talks — all-day event
-      title: t.topicNp || "जनभाषण",
-      location: t.host || null,
-      description: peopleForDesc + (t.topicJp ? (peopleForDesc ? " — " : "") + t.topicJp : ""),
-    });
-  }
   return '' +
     '<div class="card" style="border-top-color:'+c.color+'">' +
       pinHtml(c.color) +
@@ -671,35 +549,21 @@ function publicTalkCardHtml(t, i) {
       (t.host ? '<div class="areas-text">अतिथिसत्कार / मण्डली: '+esc(t.host)+'</div>' : '') +
       '<div class="role-grid">'+roles+'</div>' +
       (t.otherNote ? '<div class="note-text">'+esc(t.otherNote)+'</div>' : '') +
-      icsBtn +
     '</div>';
 }
 
 function lifeMinistryWeekHtml(w, weekKey, expanded) {
   var c = CATS.lifeMinistry;
   if (w.special) {
-    var specialIcs = w.iso ? registerIcs(weekKey, {
-      iso: w.iso, time: null, title: w.special, location: null, description: "",
-    }) : '';
     return '' +
       '<div class="card lm-card" style="border-top-color:'+c.color+'">' +
         pinHtml(c.color) +
         '<div class="card-header-row"><span class="date-stamp">'+esc(w.dateRaw)+' '+esc(w.monthLabel)+'</span></div>' +
         '<div class="special-banner">'+esc(w.special)+'</div>' +
-        specialIcs +
       '</div>';
   }
   var agendaHtml = '';
   if (expanded) {
-    var firstTime = w.items && w.items[0] ? normalizeTimeTo24h(w.items[0].time) : null;
-    var icsEv = {
-      iso: w.iso,
-      time: firstTime,
-      durationMin: CAT_DURATION_MIN.lifeMinistry,
-      title: "हाम्रो ख्रिष्टियन जीवन र सेवा सभा",
-      location: null,
-      description: w.chairman ? "अध्यक्ष: " + w.chairman : "",
-    };
     agendaHtml = '<div class="agenda">' + w.items.map(function(it) {
       var isHeader = SECTION_HEADERS[(it.text||"").trim()];
       return '<div class="'+(isHeader?"agenda-section":"agenda-row")+'">' +
@@ -707,7 +571,7 @@ function lifeMinistryWeekHtml(w, weekKey, expanded) {
         '<span class="'+(isHeader?"agenda-section-text":"agenda-text")+'">'+esc(it.text)+'</span>' +
         (it.assignee ? '<span class="agenda-assignee">'+esc(it.assignee)+'</span>' : '') +
       '</div>';
-    }).join("") + '</div>' + registerIcs(weekKey, icsEv);
+    }).join("") + '</div>';
   }
   return '' +
     '<div class="card lm-card clickable" style="border-top-color:'+c.color+'" data-toggle-week="'+weekKey+'">' +
@@ -723,17 +587,6 @@ function lifeMinistryWeekHtml(w, weekKey, expanded) {
 
 function searchResultCardHtml(r, i) {
   var c = CATS[r.cat];
-  var icsBtn = '';
-  if (r.iso) {
-    icsBtn = registerIcs("sr-" + i + "-" + r.iso, {
-      iso: r.iso,
-      time: normalizeTimeTo24h(r.time),
-      durationMin: CAT_DURATION_MIN[r.cat],
-      title: r.context || r.role,
-      location: null,
-      description: r.role + ": " + r.name,
-    });
-  }
   return '' +
     '<div class="card" style="border-top-color:'+c.color+'">' +
       pinHtml(c.color) +
@@ -743,7 +596,6 @@ function searchResultCardHtml(r, i) {
       '</div>' +
       '<div class="card-title">'+esc(r.name)+'</div>' +
       '<div class="role-grid">'+roleItemHtml(r.role, r.context)+'</div>' +
-      icsBtn +
     '</div>';
 }
 
@@ -842,14 +694,6 @@ function renderNextAssignmentBanner() {
   if (!next) { el.innerHTML = ""; return; }
 
   var rel = relLabel(next.iso, todayStr);
-  var icsEv = {
-    iso: next.iso,
-    time: normalizeTimeTo24h(next.time),
-    durationMin: CAT_DURATION_MIN[next.cat],
-    title: next.context || next.role,
-    location: null,
-    description: next.role + ": " + next.name,
-  };
   el.innerHTML =
     '<div class="next-banner">' +
       '<div class="next-banner-eyebrow">तपाईंको आगामी जिम्मेवारी · Your next assignment</div>' +
@@ -857,7 +701,6 @@ function renderNextAssignmentBanner() {
       '<div class="next-banner-meta">' + esc(fmtFull(next.iso)) + (rel ? ' · ' + esc(rel) : '') + (next.time ? ' · ' + esc(next.time) : '') + '</div>' +
       '<div class="next-banner-foot">' +
         '<span class="person-tag" style="background:rgba(255,255,255,.14);color:inherit">' + esc(next.role) + '</span>' +
-        registerIcs("nextbanner", icsEv) +
       '</div>' +
     '</div>';
 }
@@ -900,10 +743,25 @@ function renderTabs() {
   }).join("");
 }
 
+function currentMonthKey() {
+  var d = new Date();
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0");
+}
+function nextMonthKey() {
+  var d = new Date();
+  d.setMonth(d.getMonth() + 1);
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0");
+}
+
 function renderMonthTabs() {
   var el = document.getElementById("monthTabs");
   var months = null;
-  if (state.tab === "fieldService") months = Object.keys(DATA.fieldService || {}).sort();
+  if (state.tab === "fieldService") {
+    var allFsMonths = Object.keys(DATA.fieldService || {}).sort();
+    var cur = currentMonthKey(), next = nextMonthKey();
+    months = allFsMonths.filter(function(m) { return m === cur || m === next; });
+    if (!months.length) months = allFsMonths; // fallback so the tab isn't empty if data hasn't caught up yet
+  }
   if (state.tab === "lifeMinistry") months = Object.keys(DATA.lifeMinistry || {}).sort();
   if (!months || !months.length) { el.classList.add("hidden"); el.innerHTML = ""; return; }
   if (!state.month || months.indexOf(state.month) === -1) state.month = months[0];
@@ -953,7 +811,7 @@ function renderMain() {
     }
     if (!searchIdxCache) searchIdxCache = buildSearchIndex();
     var q = myName.trim().toLowerCase();
-    var mine = searchIdxCache.filter(function(r){ return r.name.toLowerCase().indexOf(q) !== -1; });
+    var mine = searchIdxCache.filter(function(r){ return r.name.toLowerCase().indexOf(q) !== -1 && r.iso && r.iso >= todayStr; });
     mine.sort(function(a,b){ return a.iso < b.iso ? -1 : a.iso > b.iso ? 1 : 0; });
     main.innerHTML =
       '<div class="my-name-bar">' +
@@ -961,7 +819,7 @@ function renderMain() {
         '<button class="link-btn" id="myNameChangeBtn">बदल्नुहोस्</button>' +
       '</div>' +
       '<div class="grid">' +
-      (mine.length === 0 ? '<div class="empty-state">"'+esc(myName)+'" सँग मिल्ने कुनै जिम्मेवारी भेटिएन।</div>' : '') +
+      (mine.length === 0 ? '<div class="empty-state">"'+esc(myName)+'" को हालसालै कुनै आगामी जिम्मेवारी भेटिएन।</div>' : '') +
       mine.map(searchResultCardHtml).join("") +
       '</div>';
     var changeBtn = document.getElementById("myNameChangeBtn");
@@ -1029,13 +887,6 @@ function closeModal() { document.getElementById("modalBackdrop").classList.add("
 /* ---------- Event delegation ---------- */
 document.addEventListener("click", function(e) {
   if (e.target.closest("a")) return; // let map/area links navigate normally
-
-  var icsBtn = e.target.closest("[data-add-ics]");
-  if (icsBtn) {
-    var icsKey = icsBtn.getAttribute("data-add-ics");
-    if (icsLookup[icsKey]) downloadIcs(icsLookup[icsKey]);
-    return;
-  }
 
   var tabBtn = e.target.closest("[data-tab]");
   if (tabBtn) { state.tab = tabBtn.getAttribute("data-tab"); render(); return; }
