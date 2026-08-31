@@ -102,14 +102,15 @@
   ::-webkit-scrollbar-thumb { background: var(--scrollbar); border-radius: 4px; }
 
   .header {
-    display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap;
-    gap: 12px; max-width: 1100px; margin: 0 auto 18px; border-bottom: 1px solid var(--border); padding-bottom: 16px;
+    display: flex; flex-direction: column; gap: 12px;
+    max-width: 1100px; margin: 0 auto 18px; border-bottom: 1px solid var(--border); padding-bottom: 16px;
   }
+  .header-top-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
   .eyebrow { font-family: 'IBM Plex Mono', monospace; font-size: calc(11px * var(--text-scale)); letter-spacing: 1.2px; text-transform: uppercase; color: var(--ink-eyebrow); margin-bottom: 6px; }
   h1 { font-family: 'Fraunces', serif; font-weight: 600; font-size: calc(34px * var(--text-scale)); margin: 0; color: var(--ink-strong); }
   .header-sub { font-size: calc(13px * var(--text-scale)); color: var(--ink-muted); margin-top: 6px; }
-  .today-badge { background: var(--ink-strong); color: var(--ink-on-strong); border-radius: 10px; padding: 10px 16px; min-width: 180px; }
-  .settings-toggle { border: 1px solid var(--border-strong); background: var(--surface); color: var(--ink); border-radius: 999px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  .today-badge { background: var(--ink-strong); color: var(--ink-on-strong); border-radius: 10px; padding: 10px 16px; width: 100%; }
+  .settings-toggle { flex-shrink: 0; border: 1px solid var(--border-strong); background: var(--surface); color: var(--ink); border-radius: 999px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
   .settings-panel { position: absolute; top: calc(100% + 8px); right: 0; background: var(--surface); border: 1px solid var(--border-strong); border-radius: 14px; padding: 14px; box-shadow: 0 8px 24px var(--shadow-1), 0 2px 8px var(--shadow-2); z-index: 40; min-width: 220px; }
   .settings-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 6px 2px; }
   .settings-row + .settings-row { border-top: 1px solid var(--border-soft); margin-top: 4px; padding-top: 10px; }
@@ -230,9 +231,7 @@
 
   @media (max-width: 480px) {
     body { padding-left: max(12px, env(safe-area-inset-left)); padding-right: max(12px, env(safe-area-inset-right)); }
-    .header { flex-direction: column; align-items: flex-start; }
     h1 { font-size: calc(26px * var(--text-scale)); }
-    .today-badge { width: 100%; }
     .tabs { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 4px; scrollbar-width: none; }
     .tabs::-webkit-scrollbar { display: none; }
     .tab-btn { flex: 0 0 auto; }
@@ -325,29 +324,29 @@
 
   <div id="appRoot">
   <header class="header">
-    <div>
+    <div class="header-top-row">
       <h1>मण्डलीको कार्यक्रम</h1>
-    </div>
-    <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; position:relative;">
-      <div class="today-badge">
-        <div class="today-label">आज</div>
-        <div class="today-date" id="todayDate"></div>
-      </div>
-      <button class="settings-toggle" id="settingsToggle" aria-label="Settings" title="सेटिङ">⚙</button>
-      <div class="settings-panel hidden" id="settingsPanel">
-        <div class="settings-row">
-          <span class="settings-label">डार्क मोड</span>
-          <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="डार्क मोड">🌙</button>
-        </div>
-        <div class="settings-row">
-          <span class="settings-label">अक्षर साइज</span>
-          <div class="text-size-toggle" role="group" aria-label="Text size">
-            <button class="text-size-btn" id="textSizeDown" aria-label="Decrease text size" title="अक्षर सानो पार्नुहोस्">A</button>
-            <span class="text-size-pct" id="textSizePct">100%</span>
-            <button class="text-size-btn" id="textSizeUp" aria-label="Increase text size" title="अक्षर ठूलो पार्नुहोस्">A</button>
+      <div style="position:relative;">
+        <button class="settings-toggle" id="settingsToggle" aria-label="Settings" title="सेटिङ">⚙</button>
+        <div class="settings-panel hidden" id="settingsPanel">
+          <div class="settings-row">
+            <span class="settings-label">डार्क मोड</span>
+            <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="डार्क मोड">🌙</button>
+          </div>
+          <div class="settings-row">
+            <span class="settings-label">अक्षर साइज</span>
+            <div class="text-size-toggle" role="group" aria-label="Text size">
+              <button class="text-size-btn" id="textSizeDown" aria-label="Decrease text size" title="अक्षर सानो पार्नुहोस्">A</button>
+              <span class="text-size-pct" id="textSizePct">100%</span>
+              <button class="text-size-btn" id="textSizeUp" aria-label="Increase text size" title="अक्षर ठूलो पार्नुहोस्">A</button>
+            </div>
           </div>
         </div>
       </div>
+    </div>
+    <div class="today-badge">
+      <div class="today-label">आज</div>
+      <div class="today-date" id="todayDate"></div>
     </div>
   </header>
 
@@ -382,11 +381,122 @@ var GOOGLE_CLIENT_ID = "752070145895-49kenu29mj4jfei3di41nahpvkv69ded.apps.googl
 
 var DATA = null;
 
-var CATS = {
-  fieldService: { label: "क्षेत्र सेवा", sub: "Field Service", color: "var(--cat-blue)", tint: "var(--cat-blue-tint)" },
-  publicTalks: { label: "जनभाषण", sub: "Public Talk", color: "var(--cat-plum)", tint: "var(--cat-plum-tint)" },
-  lifeMinistry: { label: "जीवन र सेवा सभा", sub: "Life & Ministry", color: "var(--cat-olive)", tint: "var(--cat-olive-tint)" },
+/* ============================================================
+   LANGUAGE / TRANSLATIONS
+   "ne" = Nepali with small English captions (current default)
+   "ja" = Japanese only, no English captions
+   This only translates the app's own interface text — actual
+   data from the spreadsheets (names, topics, place names, etc.)
+   always stays exactly as entered, since it can't be safely
+   auto-translated. People's names in particular are never
+   translated in either language.
+   ============================================================ */
+var LANG_KEY = "programDashboardLang";
+var I18N = {
+  appTitle: { ne: "मण्डलीको कार्यक्रम", ja: "会衆のプログラム" },
+  today: { ne: "आज", ja: "今日" },
+  signinPrompt: { ne: "यो ड्यासबोर्ड हेर्न आफ्नो Google खाताले साइन इन गर्नुहोस्।<br>Sign in with Google to view this dashboard.", ja: "このダッシュボードを見るには、Googleアカウントでサインインしてください。" },
+  checkingAccess: { ne: "जाँच गर्दै... checking access...", ja: "確認中..." },
+  accessDenied: { ne: "पहुँच अस्वीकृत — यो खाता स्वीकृत सूचीमा छैन। Access denied — this account is not on the allowed list.", ja: "アクセスが拒否されました。このアカウントは許可リストに登録されていません。" },
+  signinFailed: { ne: "साइन इन असफल भयो, फेरि प्रयास गर्नुहोस्। Sign-in failed, please try again.", ja: "サインインに失敗しました。もう一度お試しください。" },
+  loadFailed: { ne: "डेटा लोड गर्न सकिएन। नेटवर्क जाँच्नुहोस्।", ja: "データを読み込めませんでした。ネットワークをご確認ください。" },
+  settings: { ne: "सेटिङ", ja: "設定" },
+  darkMode: { ne: "डार्क मोड", ja: "ダークモード" },
+  textSize: { ne: "अक्षर साइज", ja: "文字サイズ" },
+  decreaseText: { ne: "अक्षर सानो पार्नुहोस्", ja: "文字を小さくする" },
+  increaseText: { ne: "अक्षर ठूलो पार्नुहोस्", ja: "文字を大きくする" },
+  language: { ne: "भाषा", ja: "言語" },
+  liveDataGenerated: { ne: "✓ लाइभ डेटा · जेनेरेट गरिएको: ", ja: "✓ ライブデータ・生成日時: " },
+  liveData: { ne: "✓ लाइभ डेटा", ja: "✓ ライブデータ" },
+  someDataFailed: { ne: "⚠ केही डेटा लोड हुन सकेन: ", ja: "⚠ 一部のデータを読み込めませんでした: " },
+  tabUpcoming: { ne: "आगामी", en: "Upcoming", ja: "今後の予定" },
+  tabMyProgram: { ne: "मेरो कार्यक्रम", en: "My Assignments", ja: "私の割り当て" },
+  catFieldServiceLabel: { ne: "क्षेत्र सेवा", en: "Field Service", ja: "区域宣教" },
+  catPublicTalksLabel: { ne: "जनभाषण", en: "Public Talk", ja: "公開講演" },
+  catLifeMinistryLabel: { ne: "जीवन र सेवा सभा", en: "Life & Ministry", ja: "生活と奉仕の集会" },
+  yourNextAssignment: { ne: "तपाईंको आगामी जिम्मेवारी · Your next assignment", ja: "次の割り当て" },
+  relToday: { ne: "आज · Today", ja: "今日" },
+  relTomorrow: { ne: "भोलि · Tomorrow", ja: "明日" },
+  relInDays: { ne: " दिनमा · in ", ja: "日後 · in " }, // used as: n + relInDays + " days" style construction — see relLabel()
+  ctaSetName: { ne: "आफ्नो जिम्मेवारी यहीँ हेर्न चाहनुहुन्छ? आफ्नो नाम राख्नुहोस्।", ja: "自分の割り当てをここで確認しますか？名前を登録してください。" },
+  ctaOpenMyProgram: { ne: "मेरो कार्यक्रम खोल्नुहोस् →", ja: "私の割り当てを開く →" },
+  setYourName: { ne: "तपाईंको नाम राख्नुहोस्", ja: "名前を登録してください" },
+  setNameHint: { ne: "एकपटक राखेपछि, तपाईं संचालक/वक्ता/चेयरम्यान/असाइनमेन्ट भएका सबै कार्यक्रम यहाँ देख्नुहुनेछ।", ja: "一度登録すると、司会・講演者・議長など、あなたが割り当てられている予定がすべてここに表示されます。" },
+  namePlaceholder: { ne: "जस्तै: मासाया यामानासी", ja: "例：山田太郎" },
+  save: { ne: "सेभ गर्नुहोस्", ja: "保存する" },
+  youAre: { ne: "तपाईं: ", ja: "あなた: " },
+  change: { ne: "बदल्नुहोस्", ja: "変更する" },
+  noUpcomingFor: { ne: " को हालसालै कुनै आगामी जिम्मेवारी भेटिएन।", ja: " の今後の割り当ては見つかりませんでした。" },
+  noUpcomingEvents: { ne: "कुनै आगामी कार्यक्रम भेटिएन।", ja: "今後の予定は見つかりませんでした。" },
+  noDataThisMonth: { ne: "यो महिनाको लागि डेटा भेटिएन।", ja: "今月のデータは見つかりませんでした。" },
+  topicNotSet: { ne: "विषय तोकिएको छैन", ja: "題名未定" },
+  placeTbd: { ne: "ठाउँ पछि तोकिनेछ", ja: "場所は後日決定" },
+  fieldServiceTbdTitle: { ne: "क्षेत्र सेवा (ठाउँ पछि तोकिनेछ)", ja: "区域宣教（場所は後日決定）" },
+  roleConductor: { ne: "संचालक भाइ", ja: "司会の兄弟" },
+  roleSpeaker: { ne: "वक्ता", ja: "講演者" },
+  roleChairman: { ne: "चेयरम्यान", ja: "議長" },
+  roleWtConductor: { ne: "प्र.ध.संचालक", ja: "ものみの塔研究司会" },
+  roleReader: { ne: "पढने भाइ", ja: "朗読者" },
+  roleWeekChairman: { ne: "अध्यक्ष", ja: "司会" },
+  viewMap: { ne: "नक्सा हेर्नुहोस् ↗", ja: "地図を見る ↗" },
+  hideDetails: { ne: "विवरण लुकाउनुहोस् ▲", ja: "詳細を隠す ▲" },
+  showDetails: { ne: "विवरण हेर्नुहोस् ▾", ja: "詳細を見る ▾" },
+  hostCongregation: { ne: "अतिथिसत्कार / मण्डली: ", ja: "ホスト会衆: " },
+  weeklyMeeting: { ne: "साप्ताहिक सभा", ja: "週の集会" },
+  ourChristianLife: { ne: "हाम्रो ख्रिष्टियन जीवन र सेवा सभा", ja: "クリスチャン生活と奉仕の集会" },
+  hideProgram: { ne: "कार्यक्रम लुकाउनुहोस् ▲", ja: "プログラムを隠す ▲" },
+  showProgramPrefix: { ne: "पूरा कार्यक्रम हेर्नुहोस् (", ja: "全プログラムを見る（" },
+  showProgramSuffix: { ne: " भाग) ▾", ja: "項目）▾" },
+  copyrightOrg: { ne: "Shinjuku Nepali Congregation", ja: "Shinjuku Nepali Congregation" },
 };
+
+function getLang() {
+  var saved = null;
+  try { saved = localStorage.getItem(LANG_KEY); } catch (_) {}
+  return (saved === "ja") ? "ja" : "ne";
+}
+function t(key) {
+  var entry = I18N[key];
+  if (!entry) return key;
+  var lang = getLang();
+  return entry[lang] || entry.ne || key;
+}
+function applyLang(lang) {
+  try { localStorage.setItem(LANG_KEY, lang); } catch (_) {}
+  document.documentElement.setAttribute("lang", lang === "ja" ? "ja" : "ne");
+  refreshCatsLabels();
+  applyStaticText();
+  render();
+}
+function applyStaticText() {
+  document.querySelectorAll("[data-i18n]").forEach(function(el) {
+    var key = el.getAttribute("data-i18n");
+    var html = el.getAttribute("data-i18n-html") === "1";
+    if (html) el.innerHTML = t(key); else el.textContent = t(key);
+  });
+  document.querySelectorAll("[data-i18n-title]").forEach(function(el) {
+    el.setAttribute("title", t(el.getAttribute("data-i18n-title")));
+  });
+  document.querySelectorAll("[data-i18n-placeholder]").forEach(function(el) {
+    el.setAttribute("placeholder", t(el.getAttribute("data-i18n-placeholder")));
+  });
+}
+
+var CATS = {
+  fieldService: { label: "", sub: "", color: "var(--cat-blue)", tint: "var(--cat-blue-tint)" },
+  publicTalks: { label: "", sub: "", color: "var(--cat-plum)", tint: "var(--cat-plum-tint)" },
+  lifeMinistry: { label: "", sub: "", color: "var(--cat-olive)", tint: "var(--cat-olive-tint)" },
+};
+function refreshCatsLabels() {
+  var isJa = getLang() === "ja";
+  CATS.fieldService.label = t("catFieldServiceLabel");
+  CATS.fieldService.sub = isJa ? "" : "Field Service";
+  CATS.publicTalks.label = t("catPublicTalksLabel");
+  CATS.publicTalks.sub = isJa ? "" : "Public Talk";
+  CATS.lifeMinistry.label = t("catLifeMinistryLabel");
+  CATS.lifeMinistry.sub = isJa ? "" : "Life & Ministry";
+}
+refreshCatsLabels();
 var NEPALI_MONTHS_EN = { "01":"January","02":"February","03":"March","04":"April","05":"May","06":"June","07":"July","08":"August","09":"September","10":"October","11":"November","12":"December" };
 var SECTION_HEADERS = { "बाइबलमा पाइने अनमोल धन":1, "कुराकानी गर्ने सीप तिखारौँ":1, "ख्रीष्टियन जीवन":1 };
 
@@ -510,7 +620,7 @@ function feedCardHtml(item, todayStr) {
         '<span class="date-stamp">'+esc(fmtShort(item.iso))+'</span>' +
         (rel ? '<span class="rel-badge">'+esc(rel)+'</span>' : '') +
       '</div>' +
-      '<div class="cat-label">'+esc(c.label)+' <span class="sub-faint">· '+esc(c.sub)+'</span></div>' +
+      '<div class="cat-label">'+esc(c.label)+(c.sub ? ' <span class="sub-faint">· '+esc(c.sub)+'</span>' : '')+'</div>' +
       '<div class="card-title">'+esc(item.title)+'</div>' +
       (item.subtitle ? '<div class="card-sub">'+esc(item.subtitle)+'</div>' : '') +
       '<div class="card-foot">' + (item.time ? '<span class="time-tag">'+esc(item.time)+'</span>' : '') + peopleHtml + '</div>' +
@@ -753,20 +863,28 @@ function render() {
   renderMain();
 }
 
+function tabInfo(key) {
+  var entry = I18N[key];
+  var lang = getLang();
+  return { label: entry[lang] || entry.ne, sub: lang === "ja" ? "" : (entry.en || "") };
+}
+
 function renderTabs() {
   var tabsEl = document.getElementById("tabs");
   if (state.tab === "search") { tabsEl.classList.add("hidden"); return; }
   tabsEl.classList.remove("hidden");
+  var up = tabInfo("tabUpcoming");
+  var mine = tabInfo("tabMyProgram");
   var defs = [
-    ["upcoming","आगामी","Upcoming"],
-    ["myProgram","मेरो कार्यक्रम","My Assignments"],
+    ["upcoming", up.label, up.sub],
+    ["myProgram", mine.label, mine.sub],
     ["fieldService",CATS.fieldService.label,CATS.fieldService.sub],
     ["lifeMinistry",CATS.lifeMinistry.label,CATS.lifeMinistry.sub],
     ["publicTalks",CATS.publicTalks.label,CATS.publicTalks.sub],
   ];
   tabsEl.innerHTML = defs.map(function(d) {
     var active = state.tab === d[0];
-    return '<button class="tab-btn'+(active?" active":"")+'" data-tab="'+d[0]+'"><div>'+esc(d[1])+'</div><div class="tab-btn-sub">'+esc(d[2])+'</div></button>';
+    return '<button class="tab-btn'+(active?" active":"")+'" data-tab="'+d[0]+'"><div>'+esc(d[1])+'</div>'+(d[2] ? '<div class="tab-btn-sub">'+esc(d[2])+'</div>' : '')+'</button>';
   }).join("");
 }
 
