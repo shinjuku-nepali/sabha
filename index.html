@@ -917,8 +917,13 @@ function currentMonthKey() {
 }
 function nextMonthKey() {
   var d = new Date();
-  d.setMonth(d.getMonth() + 1);
-  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0");
+  // Use day=1 when constructing the "next month" date. Reusing
+  // today's actual day-of-month with setMonth() overflows when
+  // the current day doesn't exist in the target month (e.g. Aug 31
+  // + one month tries "Sept 31", which rolls over to October) —
+  // this bug made the tab skip September entirely near month-end.
+  var nm = new Date(d.getFullYear(), d.getMonth() + 1, 1);
+  return nm.getFullYear() + "-" + String(nm.getMonth() + 1).padStart(2, "0");
 }
 
 function renderMonthTabs() {
