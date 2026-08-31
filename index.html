@@ -116,6 +116,9 @@
   .settings-row + .settings-row { border-top: 1px solid var(--border-soft); margin-top: 4px; padding-top: 10px; }
   .settings-label { font-size: calc(13px * var(--text-scale)); color: var(--ink-muted); }
   .theme-toggle { border: 1px solid var(--border-strong); background: var(--surface); color: var(--ink); border-radius: 999px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 17px; }
+  .lang-toggle { display: flex; align-items: center; gap: 2px; background: var(--chip-bg2); border-radius: 999px; padding: 3px; }
+  .lang-btn { border: none; background: transparent; color: var(--ink-muted); border-radius: 999px; padding: 7px 12px; font-size: calc(12px * var(--text-scale)); font-weight: 600; }
+  .lang-btn.active { background: var(--ink-strong); color: var(--ink-on-strong); }
   .text-size-toggle { display: flex; align-items: center; gap: 2px; background: var(--surface); border: 1px solid var(--border-strong); border-radius: 999px; padding: 3px; }
   .text-size-btn { border: none; background: transparent; color: var(--ink); border-radius: 999px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-family: 'Fraunces', serif; font-weight: 700; -webkit-appearance: none; appearance: none; }
   .text-size-btn:first-child { font-size: 15px; }
@@ -315,37 +318,44 @@
 <body>
 
   <div id="signinScreen">
-    <h1>मण्डलीको कार्यक्रम</h1>
-    <p>यो ड्यासबोर्ड हेर्न आफ्नो Google खाताले साइन इन गर्नुहोस्।<br>Sign in with Google to view this dashboard.</p>
+    <h1 data-i18n="appTitle">मण्डलीको कार्यक्रम</h1>
+    <p data-i18n="signinPrompt" data-i18n-html="1">यो ड्यासबोर्ड हेर्न आफ्नो Google खाताले साइन इन गर्नुहोस्।<br>Sign in with Google to view this dashboard.</p>
     <div id="signinBtnHolder"></div>
-    <div id="signinLoading">जाँच गर्दै... checking access...</div>
+    <div id="signinLoading" data-i18n="checkingAccess">जाँच गर्दै... checking access...</div>
     <div id="signinError"></div>
   </div>
 
   <div id="appRoot">
   <header class="header">
     <div class="header-top-row">
-      <h1>मण्डलीको कार्यक्रम</h1>
+      <h1 data-i18n="appTitle">मण्डलीको कार्यक्रम</h1>
       <div style="position:relative;">
-        <button class="settings-toggle" id="settingsToggle" aria-label="Settings" title="सेटिङ">⚙</button>
+        <button class="settings-toggle" id="settingsToggle" aria-label="Settings" data-i18n-title="settings" title="सेटिङ">⚙</button>
         <div class="settings-panel hidden" id="settingsPanel">
           <div class="settings-row">
-            <span class="settings-label">डार्क मोड</span>
-            <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="डार्क मोड">🌙</button>
+            <span class="settings-label" data-i18n="darkMode">डार्क मोड</span>
+            <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" data-i18n-title="darkMode" title="डार्क मोड">🌙</button>
           </div>
           <div class="settings-row">
-            <span class="settings-label">अक्षर साइज</span>
+            <span class="settings-label" data-i18n="textSize">अक्षर साइज</span>
             <div class="text-size-toggle" role="group" aria-label="Text size">
-              <button class="text-size-btn" id="textSizeDown" aria-label="Decrease text size" title="अक्षर सानो पार्नुहोस्">A</button>
+              <button class="text-size-btn" id="textSizeDown" aria-label="Decrease text size" data-i18n-title="decreaseText" title="अक्षर सानो पार्नुहोस्">A</button>
               <span class="text-size-pct" id="textSizePct">100%</span>
-              <button class="text-size-btn" id="textSizeUp" aria-label="Increase text size" title="अक्षर ठूलो पार्नुहोस्">A</button>
+              <button class="text-size-btn" id="textSizeUp" aria-label="Increase text size" data-i18n-title="increaseText" title="अक्षर ठूलो पार्नुहोस्">A</button>
+            </div>
+          </div>
+          <div class="settings-row">
+            <span class="settings-label" data-i18n="language">भाषा</span>
+            <div class="lang-toggle" role="group" aria-label="Language">
+              <button class="lang-btn" id="langNe" data-lang="ne">नेपाली</button>
+              <button class="lang-btn" id="langJa" data-lang="ja">日本語</button>
             </div>
           </div>
         </div>
       </div>
     </div>
     <div class="today-badge">
-      <div class="today-label">आज</div>
+      <div class="today-label" data-i18n="today">आज</div>
       <div class="today-date" id="todayDate"></div>
     </div>
   </header>
@@ -417,7 +427,6 @@ var I18N = {
   yourNextAssignment: { ne: "तपाईंको आगामी जिम्मेवारी · Your next assignment", ja: "次の割り当て" },
   relToday: { ne: "आज · Today", ja: "今日" },
   relTomorrow: { ne: "भोलि · Tomorrow", ja: "明日" },
-  relInDays: { ne: " दिनमा · in ", ja: "日後 · in " }, // used as: n + relInDays + " days" style construction — see relLabel()
   ctaSetName: { ne: "आफ्नो जिम्मेवारी यहीँ हेर्न चाहनुहुन्छ? आफ्नो नाम राख्नुहोस्।", ja: "自分の割り当てをここで確認しますか？名前を登録してください。" },
   ctaOpenMyProgram: { ne: "मेरो कार्यक्रम खोल्नुहोस् →", ja: "私の割り当てを開く →" },
   setYourName: { ne: "तपाईंको नाम राख्नुहोस्", ja: "名前を登録してください" },
@@ -516,9 +525,12 @@ function fmtFull(iso) { return toDateObj(iso).toLocaleDateString("en-US",{weekda
 function dayDelta(iso, todayStr) { return Math.round((toDateObj(iso) - toDateObj(todayStr)) / 86400000); }
 function relLabel(iso, todayStr) {
   var n = dayDelta(iso, todayStr);
-  if (n === 0) return "आज · Today";
-  if (n === 1) return "भोलि · Tomorrow";
-  if (n > 1 && n < 7) return n + " दिनमा · in " + n + " days";
+  if (n === 0) return t("relToday");
+  if (n === 1) return t("relTomorrow");
+  if (n > 1 && n < 7) {
+    if (getLang() === "ja") return n + "日後";
+    return n + " दिनमा · in " + n + " days";
+  }
   return null;
 }
 function isoOf(d) { return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0"); }
@@ -559,17 +571,17 @@ function buildFeed() {
   Object.keys(DATA.fieldService || {}).forEach(function(month) {
     (DATA.fieldService[month] || []).forEach(function(e, i) {
       if (!e.iso) return;
-      feed.push({ cat:"fieldService", iso:e.iso, key:"fs-"+month+"-"+i, title:e.place || "क्षेत्र सेवा (ठाउँ पछि तोकिनेछ)", subtitle:e.areas, time:e.time, people:[e.conductor].filter(Boolean), raw:e });
+      feed.push({ cat:"fieldService", iso:e.iso, key:"fs-"+month+"-"+i, title:e.place || t("fieldServiceTbdTitle"), subtitle:e.areas, time:e.time, people:[e.conductor].filter(Boolean), raw:e });
     });
   });
-  (DATA.publicTalks || []).forEach(function(t, i) {
-    if (!t.iso) return;
-    feed.push({ cat:"publicTalks", iso:t.iso, key:"pt-"+i, title:t.topicNp || (t.otherNote || "जनभाषण"), subtitle:t.topicJp, time:null, people:[t.speaker].filter(Boolean), raw:t });
+  (DATA.publicTalks || []).forEach(function(talk, i) {
+    if (!talk.iso) return;
+    feed.push({ cat:"publicTalks", iso:talk.iso, key:"pt-"+i, title:talk.topicNp || (talk.otherNote || t("catPublicTalksLabel")), subtitle:talk.topicJp, time:null, people:[talk.speaker].filter(Boolean), raw:talk });
   });
   Object.keys(DATA.lifeMinistry || {}).forEach(function(month) {
     (DATA.lifeMinistry[month] || []).forEach(function(w, i) {
       if (!w.iso) return;
-      feed.push({ cat:"lifeMinistry", iso:w.iso, key:"lm-"+month+"-"+i, title:w.special || "हाम्रो ख्रिष्टियन जीवन र सेवा सभा", subtitle: w.chairman ? ("अध्यक्ष: "+w.chairman) : null, time: (w.items && w.items[0]) ? w.items[0].time : null, people:[w.chairman].filter(Boolean), raw:w });
+      feed.push({ cat:"lifeMinistry", iso:w.iso, key:"lm-"+month+"-"+i, title:w.special || t("ourChristianLife"), subtitle: w.chairman ? (t("roleWeekChairman")+": "+w.chairman) : null, time: (w.items && w.items[0]) ? w.items[0].time : null, people:[w.chairman].filter(Boolean), raw:w });
     });
   });
   feed.sort(function(a,b){ return a.iso < b.iso ? -1 : a.iso > b.iso ? 1 : 0; });
@@ -580,20 +592,20 @@ function buildSearchIndex() {
   var rows = [];
   Object.keys(DATA.fieldService || {}).forEach(function(m) {
     (DATA.fieldService[m] || []).forEach(function(e) {
-      if (e.conductor) rows.push({ cat:"fieldService", iso:e.iso, time:e.time, name:e.conductor, role:"संचालक भाइ", context:e.place || e.areas || "क्षेत्र सेवा" });
+      if (e.conductor) rows.push({ cat:"fieldService", iso:e.iso, time:e.time, name:e.conductor, role:t("roleConductor"), context:e.place || e.areas || t("catFieldServiceLabel") });
     });
   });
-  (DATA.publicTalks || []).forEach(function(t) {
-    [[t.speaker,"वक्ता"],[t.chairman,"चेयरम्यान"],[t.wtConductor,"प्र.ध.संचालक"],[t.reader,"पढने भाइ"]].forEach(function(pair) {
-      if (pair[0]) rows.push({ cat:"publicTalks", iso:t.iso, time:null, name:pair[0], role:pair[1], context:t.topicNp || t.date });
+  (DATA.publicTalks || []).forEach(function(talk) {
+    [[talk.speaker,t("roleSpeaker")],[talk.chairman,t("roleChairman")],[talk.wtConductor,t("roleWtConductor")],[talk.reader,t("roleReader")]].forEach(function(pair) {
+      if (pair[0]) rows.push({ cat:"publicTalks", iso:talk.iso, time:null, name:pair[0], role:pair[1], context:talk.topicNp || talk.date });
     });
   });
   Object.keys(DATA.lifeMinistry || {}).forEach(function(m) {
     (DATA.lifeMinistry[m] || []).forEach(function(w) {
       var firstTime = w.items && w.items[0] ? w.items[0].time : null;
-      if (w.chairman) rows.push({ cat:"lifeMinistry", iso:w.iso, time:firstTime, name:w.chairman, role:"अध्यक्ष", context:w.special || "साप्ताहिक सभा" });
+      if (w.chairman) rows.push({ cat:"lifeMinistry", iso:w.iso, time:firstTime, name:w.chairman, role:t("roleWeekChairman"), context:w.special || t("weeklyMeeting") });
       (w.items || []).forEach(function(it) {
-        if (it.assignee) rows.push({ cat:"lifeMinistry", iso:w.iso, time:it.time||firstTime, name:it.assignee, role:it.text, context:w.special || "साप्ताहिक सभा" });
+        if (it.assignee) rows.push({ cat:"lifeMinistry", iso:w.iso, time:it.time||firstTime, name:it.assignee, role:it.text, context:w.special || t("weeklyMeeting") });
       });
     });
   });
@@ -632,9 +644,9 @@ function fieldServiceCardHtml(e, key, expanded) {
   var detailsHtml = '';
   if (expanded) {
     detailsHtml = '<div class="agenda">' +
-      (e.mapLink ? '<a class="map-link" href="'+esc(e.mapLink)+'" target="_blank" rel="noreferrer">नक्सा हेर्नुहोस् ↗</a>' : '') +
+      (e.mapLink ? '<a class="map-link" href="'+esc(e.mapLink)+'" target="_blank" rel="noreferrer">'+esc(t("viewMap"))+'</a>' : '') +
       (e.areas ? '<div class="areas-text">'+areasHtml(e)+'</div>' : '') +
-      (e.conductor ? '<div class="card-foot"><span class="role-label">संचालक भाइ</span><span class="person-tag">'+esc(e.conductor)+'</span></div>' : '') +
+      (e.conductor ? '<div class="card-foot"><span class="role-label">'+esc(t("roleConductor"))+'</span><span class="person-tag">'+esc(e.conductor)+'</span></div>' : '') +
     '</div>';
   }
   return '' +
@@ -645,8 +657,8 @@ function fieldServiceCardHtml(e, key, expanded) {
         '<span class="day-tag">'+esc(e.day)+'</span>' +
         (e.time ? '<span class="time-tag">'+esc(e.time.trim())+'</span>' : '') +
       '</div>' +
-      '<div class="card-title">'+esc(e.place || "ठाउँ पछि तोकिनेछ")+'</div>' +
-      '<div class="expand-hint">'+(expanded ? "विवरण लुकाउनुहोस् ▲" : "विवरण हेर्नुहोस् ▾")+'</div>' +
+      '<div class="card-title">'+esc(e.place || t("placeTbd"))+'</div>' +
+      '<div class="expand-hint">'+(expanded ? esc(t("hideDetails")) : esc(t("showDetails")))+'</div>' +
       detailsHtml +
     '</div>';
 }
@@ -655,24 +667,24 @@ function roleItemHtml(label, value) {
   return '<div class="role-item"><span class="role-label">'+esc(label)+'</span><span class="person-tag">'+esc(value)+'</span></div>';
 }
 
-function publicTalkCardHtml(t, i) {
+function publicTalkCardHtml(talk, i) {
   var c = CATS.publicTalks;
   var roles = '';
-  if (t.speaker) roles += roleItemHtml("वक्ता", t.speaker);
-  if (t.chairman) roles += roleItemHtml("चेयरम्यान", t.chairman);
-  if (t.wtConductor) roles += roleItemHtml("प्र.ध.संचालक", t.wtConductor);
-  if (t.reader) roles += roleItemHtml("पढने भाइ", t.reader);
+  if (talk.speaker) roles += roleItemHtml(t("roleSpeaker"), talk.speaker);
+  if (talk.chairman) roles += roleItemHtml(t("roleChairman"), talk.chairman);
+  if (talk.wtConductor) roles += roleItemHtml(t("roleWtConductor"), talk.wtConductor);
+  if (talk.reader) roles += roleItemHtml(t("roleReader"), talk.reader);
   return '' +
     '<div class="card" style="border-top-color:'+c.color+'">' +
       pinHtml(c.color) +
       '<div class="card-header-row">' +
-        '<span class="date-stamp">'+esc(t.date)+'</span>' +
-        (t.no ? '<span class="num-tag">No. '+esc(t.no)+'</span>' : '') +
+        '<span class="date-stamp">'+esc(talk.date)+'</span>' +
+        (talk.no ? '<span class="num-tag">No. '+esc(talk.no)+'</span>' : '') +
       '</div>' +
-      (t.topicNp ? ('<div class="card-title">'+esc(t.topicNp)+'</div>' + (t.topicJp ? '<div class="jp-text">'+esc(t.topicJp)+'</div>' : '')) : '<div class="card-title-faint">विषय तोकिएको छैन</div>') +
-      (t.host ? '<div class="areas-text">अतिथिसत्कार / मण्डली: '+esc(t.host)+'</div>' : '') +
+      (talk.topicNp ? ('<div class="card-title">'+esc(talk.topicNp)+'</div>' + (talk.topicJp ? '<div class="jp-text">'+esc(talk.topicJp)+'</div>' : '')) : '<div class="card-title-faint">'+esc(t("topicNotSet"))+'</div>') +
+      (talk.host ? '<div class="areas-text">'+esc(t("hostCongregation"))+esc(talk.host)+'</div>' : '') +
       '<div class="role-grid">'+roles+'</div>' +
-      (t.otherNote ? '<div class="note-text">'+esc(t.otherNote)+'</div>' : '') +
+      (talk.otherNote ? '<div class="note-text">'+esc(talk.otherNote)+'</div>' : '') +
     '</div>';
 }
 
@@ -702,9 +714,9 @@ function lifeMinistryWeekHtml(w, weekKey, expanded) {
       pinHtml(c.color) +
       '<div class="card-header-row">' +
         '<span class="date-stamp">'+esc(w.dateRaw)+' '+esc(w.monthLabel)+'</span>' +
-        (w.chairman ? '<span class="role-label">अध्यक्ष</span><span class="person-tag">'+esc(w.chairman)+'</span>' : '') +
+        (w.chairman ? '<span class="role-label">'+esc(t("roleWeekChairman"))+'</span><span class="person-tag">'+esc(w.chairman)+'</span>' : '') +
       '</div>' +
-      '<div class="expand-hint">'+(expanded ? "कार्यक्रम लुकाउनुहोस् ▲" : ("पूरा कार्यक्रम हेर्नुहोस् ("+w.items.length+" भाग) ▾"))+'</div>' +
+      '<div class="expand-hint">'+(expanded ? esc(t("hideProgram")) : (esc(t("showProgramPrefix"))+w.items.length+esc(t("showProgramSuffix"))))+'</div>' +
       agendaHtml +
     '</div>';
 }
@@ -800,6 +812,17 @@ document.addEventListener("click", function(e) {
   }
 });
 
+/* ---------- Language toggle ---------- */
+function updateLangButtons() {
+  var lang = getLang();
+  document.getElementById("langNe").classList.toggle("active", lang === "ne");
+  document.getElementById("langJa").classList.toggle("active", lang === "ja");
+}
+document.getElementById("langNe").addEventListener("click", function() { applyLang("ne"); updateLangButtons(); });
+document.getElementById("langJa").addEventListener("click", function() { applyLang("ja"); updateLangButtons(); });
+applyStaticText();
+updateLangButtons();
+
 /* ---------- Render ---------- */
 var todayStr = todayIso();
 var feedCache = null, searchIdxCache = null, openItemLookup = {};
@@ -821,8 +844,8 @@ function renderNextAssignmentBanner() {
   if (!myName) {
     el.innerHTML =
       '<div class="next-banner-cta">' +
-        '<span>आफ्नो जिम्मेवारी यहीँ हेर्न चाहनुहुन्छ? आफ्नो नाम राख्नुहोस्।</span>' +
-        '<button class="link-btn" data-tab="myProgram">मेरो कार्यक्रम खोल्नुहोस् →</button>' +
+        '<span>' + esc(t("ctaSetName")) + '</span>' +
+        '<button class="link-btn" data-tab="myProgram">' + esc(t("ctaOpenMyProgram")) + '</button>' +
       '</div>';
     return;
   }
@@ -833,7 +856,7 @@ function renderNextAssignmentBanner() {
   var rel = relLabel(next.iso, todayStr);
   el.innerHTML =
     '<div class="next-banner">' +
-      '<div class="next-banner-eyebrow">तपाईंको आगामी जिम्मेवारी · Your next assignment</div>' +
+      '<div class="next-banner-eyebrow">' + esc(t("yourNextAssignment")) + '</div>' +
       '<div class="next-banner-title">' + esc(next.context || next.role) + '</div>' +
       '<div class="next-banner-meta">' + esc(fmtFull(next.iso)) + (rel ? ' · ' + esc(rel) : '') + (next.time ? ' · ' + esc(next.time) : '') + '</div>' +
       '<div class="next-banner-foot">' +
@@ -847,11 +870,11 @@ function render() {
 
   var syncBar = document.getElementById("syncBar");
   var genAt = DATA.meta && DATA.meta.generatedAt ? new Date(DATA.meta.generatedAt).toLocaleString() : null;
-  syncBar.textContent = genAt ? ("✓ लाइभ डेटा · जेनेरेट गरिएको: " + genAt) : "✓ लाइभ डेटा";
+  syncBar.textContent = genAt ? (t("liveDataGenerated") + genAt) : t("liveData");
 
   var errBar = document.getElementById("errBar");
   if (DATA.errors && DATA.errors.length) {
-    errBar.textContent = "⚠ केही डेटा लोड हुन सकेन: " + DATA.errors.join(" | ");
+    errBar.textContent = t("someDataFailed") + DATA.errors.join(" | ");
     errBar.classList.remove("hidden");
   } else {
     errBar.classList.add("hidden");
@@ -937,11 +960,11 @@ function renderMain() {
     if (!myName) {
       main.innerHTML =
         '<div class="my-name-setup">' +
-          '<div class="my-name-title">तपाईंको नाम राख्नुहोस्</div>' +
-          '<div class="my-name-hint">एकपटक राखेपछि, तपाईं संचालक/वक्ता/चेयरम्यान/असाइनमेन्ट भएका सबै कार्यक्रम यहाँ देख्नुहुनेछ।</div>' +
+          '<div class="my-name-title">' + esc(t("setYourName")) + '</div>' +
+          '<div class="my-name-hint">' + esc(t("setNameHint")) + '</div>' +
           '<div class="my-name-row">' +
-            '<input class="search-input" id="myNameInput" placeholder="जस्तै: मासाया यामानासी">' +
-            '<button class="primary-btn" id="myNameSaveBtn">सेभ गर्नुहोस्</button>' +
+            '<input class="search-input" id="myNameInput" placeholder="'+esc(t("namePlaceholder"))+'">' +
+            '<button class="primary-btn" id="myNameSaveBtn">' + esc(t("save")) + '</button>' +
           '</div>' +
         '</div>';
       var saveBtn = document.getElementById("myNameSaveBtn");
@@ -960,11 +983,11 @@ function renderMain() {
     mine.sort(function(a,b){ return a.iso < b.iso ? -1 : a.iso > b.iso ? 1 : 0; });
     main.innerHTML =
       '<div class="my-name-bar">' +
-        '<span>तपाईं: <strong>'+esc(myName)+'</strong></span>' +
-        '<button class="link-btn" id="myNameChangeBtn">बदल्नुहोस्</button>' +
+        '<span>' + esc(t("youAre")) + '<strong>'+esc(myName)+'</strong></span>' +
+        '<button class="link-btn" id="myNameChangeBtn">' + esc(t("change")) + '</button>' +
       '</div>' +
       '<div class="grid">' +
-      (mine.length === 0 ? '<div class="empty-state">"'+esc(myName)+'" को हालसालै कुनै आगामी जिम्मेवारी भेटिएन।</div>' : '') +
+      (mine.length === 0 ? '<div class="empty-state">"'+esc(myName)+'"'+esc(t("noUpcomingFor"))+'</div>' : '') +
       mine.map(searchResultCardHtml).join("") +
       '</div>';
     var changeBtn = document.getElementById("myNameChangeBtn");
@@ -977,7 +1000,7 @@ function renderMain() {
     var upcoming = feedCache.filter(function(f){ return f.iso >= todayStr; }).slice(0, 10);
     openItemLookup = {}; upcoming.forEach(function(it){ openItemLookup[it.key] = it; });
     main.innerHTML = '<div class="grid">' +
-      (upcoming.length === 0 ? '<div class="empty-state">कुनै आगामी कार्यक्रम भेटिएन।</div>' : '') +
+      (upcoming.length === 0 ? '<div class="empty-state">'+esc(t("noUpcomingEvents"))+'</div>' : '') +
       upcoming.map(function(it){ return feedCardHtml(it, todayStr); }).join("") +
     '</div>';
     return;
@@ -986,7 +1009,7 @@ function renderMain() {
   if (state.tab === "fieldService") {
     var fsEntries = (DATA.fieldService || {})[state.month] || [];
     main.innerHTML = '<div class="grid">' +
-      (fsEntries.length === 0 ? '<div class="empty-state">यो महिनाको लागि डेटा भेटिएन।</div>' : '') +
+      (fsEntries.length === 0 ? '<div class="empty-state">'+esc(t("noDataThisMonth"))+'</div>' : '') +
       fsEntries.map(function(e, i) {
         var key = state.month + "-" + i;
         return fieldServiceCardHtml(e, key, !!state.expandedFS[key]);
@@ -1003,7 +1026,7 @@ function renderMain() {
   if (state.tab === "lifeMinistry") {
     var lmWeeks = (DATA.lifeMinistry || {})[state.month] || [];
     main.innerHTML = '<div class="grid">' +
-      (lmWeeks.length === 0 ? '<div class="empty-state">यो महिनाको लागि डेटा भेटिएन।</div>' : '') +
+      (lmWeeks.length === 0 ? '<div class="empty-state">'+esc(t("noDataThisMonth"))+'</div>' : '') +
       lmWeeks.map(function(w, i) {
         var key = state.month + "-" + i;
         return lifeMinistryWeekHtml(w, key, !!state.expandedWeeks[key]);
@@ -1023,7 +1046,7 @@ function openModal(item) {
     '<h2 class="modal-title">'+esc(item.title)+'</h2>' +
     (item.subtitle ? '<div class="modal-sub">'+esc(item.subtitle)+'</div>' : '') +
     (item.raw.areas ? '<div class="areas-text">'+areasHtml(item.raw)+'</div>' : '') +
-    (item.raw.mapLink ? '<a class="map-link" href="'+esc(item.raw.mapLink)+'" target="_blank" rel="noreferrer">नक्सा हेर्नुहोस् ↗</a>' : '') +
+    (item.raw.mapLink ? '<a class="map-link" href="'+esc(item.raw.mapLink)+'" target="_blank" rel="noreferrer">'+esc(t("viewMap"))+'</a>' : '') +
     peopleHtml;
   document.getElementById("modalBackdrop").classList.remove("hidden");
 }
@@ -1088,11 +1111,11 @@ function handleCredentialResponse(response) {
     .then(function(res) { return res.json(); })
     .then(function(json) {
       if (json && json.error === "access_denied") {
-        showSigninError("प्रवेश निषेध गरिएको छ — यो खाता अनुमति सूचीमा समावेश छैन। Access denied — this account is not on the allowed list.");
+        showSigninError(t("accessDenied"));
         return;
       }
       if (json && json.error === "auth_required") {
-        showSigninError("साइन इन असफल भयो, फेरि प्रयास गर्नुहोस्। Sign-in failed, please try again.");
+        showSigninError(t("signinFailed"));
         return;
       }
       DATA = json;
@@ -1104,7 +1127,7 @@ function handleCredentialResponse(response) {
       startAutoRefresh();
     })
     .catch(function(err) {
-      showSigninError("डेटा लोड गर्न सकिएन। नेटवर्क जाँच्नुहोस्। (" + err.message + ")");
+      showSigninError(t("loadFailed") + " (" + err.message + ")");
     });
 }
 
