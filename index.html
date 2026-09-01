@@ -192,6 +192,12 @@
 
   .special-banner { background: var(--cat-olive-tint); color: var(--cat-olive); border-radius: 8px; padding: 10px 12px; font-weight: 600; font-size: calc(14px * var(--text-scale)); }
   .expand-hint { font-family: 'IBM Plex Mono', monospace; font-size: calc(11px * var(--text-scale)); color: var(--cat-olive); margin-top: 4px; }
+  .rsvp-block { margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border-soft); }
+  .rsvp-count { font-size: calc(13px * var(--text-scale)); font-weight: 600; color: var(--ink); margin-bottom: 4px; }
+  .rsvp-names { font-size: calc(12px * var(--text-scale)); color: var(--ink-muted); margin-bottom: 10px; }
+  .rsvp-btn { width: 100%; border: 1px solid var(--ink-strong); background: var(--ink-strong); color: var(--ink-on-strong); border-radius: 10px; padding: 11px 16px; font-size: calc(13.5px * var(--text-scale)); font-weight: 600; }
+  .rsvp-btn.joined { background: var(--chip-bg2); color: var(--ink); border-color: var(--border-strong); }
+  .rsvp-btn:disabled { opacity: .6; }
   .agenda { margin-top: 12px; border-top: 1px dashed var(--border-soft); padding-top: 10px; display: flex; flex-direction: column; gap: 6px; }
   .agenda-row, .agenda-section { display: flex; align-items: baseline; gap: 8px; font-size: calc(12.5px * var(--text-scale)); }
   .agenda-section { margin-top: 8px; }
@@ -457,6 +463,12 @@ var I18N = {
   showProgramPrefix: { ne: "पूरा कार्यक्रम हेर्नुहोस् (", ja: "全プログラムを見る（" },
   showProgramSuffix: { ne: " भाग) ▾", ja: "項目）▾" },
   copyrightOrg: { ne: "Shinjuku Nepali Congregation", ja: "Shinjuku Nepali Congregation" },
+  imGoing: { ne: "म जान्छु", ja: "参加します" },
+  cancelGoing: { ne: "रद्द गर्नुहोस्", ja: "キャンセル" },
+  goingLabel: { ne: " जना जाँदै हुनुहुन्छ", ja: "人が参加予定" },
+  goingNamesPrefix: { ne: "जाने: ", ja: "参加者: " },
+  setNameToJoin: { ne: "सहभागी हुन पहिले आफ्नो नाम राख्नुहोस्", ja: "参加するには先に名前を登録してください" },
+  rsvpFailed: { ne: "पुन: प्रयास गर्नुहोस्, केही समस्या भयो।", ja: "エラーが発生しました。もう一度お試しください。" },
 };
 
 function getLang() {
@@ -544,6 +556,57 @@ function setMyName(name) {
 function clearMyName() {
   try { localStorage.removeItem(MY_NAME_KEY); } catch (_) {}
 }
+
+/* ============================================================
+   RSVP ("I'm going") — lets people mark themselves as attending
+   a specific field service outing, with a visible headcount to
+   encourage others to join.
+   ============================================================ */
+function findFieldServiceEntry(eventKey) {
+  var months = Object.keys(DATA.fieldService || {});
+  for (var i = 0; i < months.length; i++) {
+    var entries = DATA.fieldService[months[i]] || [];
+    for (var j = 0; j < entries.length; j++) {
+      if (entries[j].rsvpKey === eventKey) return entries[j];
+    }
+  }
+  return null;
+}
+
+function toggleRsvp(eventKey, wantsJoin, btnEl) {
+  var myName = getMyName();
+  if (!myName) {
+    state.tab = "myProgram";
+    render();
+    return;
+  }
+  if (!lastIdToken) return;
+
+  var originalText = btnEl.textContent;
+  btnEl.disabled = true;
+
+  fetch(APPS_SCRIPT_URL, {
+    method: "POST",
+    body: JSON.stringify({ token: lastIdToken, eventKey: eventKey, name: myName, action: wantsJoin ? "join" : "leave" }),
+  })
+    .then(function(res) { return res.json(); })
+    .then(function(json) {
+      if (!json || json.error) throw new Error(json && json.error);
+      var entry = findFieldServiceEntry(eventKey);
+      if (entry) {
+        entry.rsvpCount = json.rsvpCount;
+        entry.rsvpNames = json.rsvpNames;
+        entry.youJoined = json.youJoined;
+      }
+      renderMain();
+    })
+    .catch(function() {
+      btnEl.textContent = t("rsvpFailed");
+      btnEl.disabled = false;
+      setTimeout(function() { btnEl.textContent = originalText; }, 2500);
+    });
+}
+
 function esc(str) {
   if (str === null || str === undefined) return "";
   return String(str).replace(/[&<>"']/g, function(c) {
@@ -639,6 +702,21 @@ function feedCardHtml(item, todayStr) {
     '</div>';
 }
 
+function rsvpBlockHtml(e) {
+  if (!e.rsvpKey) return '';
+  var count = e.rsvpCount || 0;
+  var names = e.rsvpNames || [];
+  var joined = !!e.youJoined;
+  var countLine = count > 0 ? ('<div class="rsvp-count">' + count + esc(t("goingLabel")) + '</div>') : '';
+  var namesLine = names.length > 0 ? ('<div class="rsvp-names">' + esc(t("goingNamesPrefix")) + esc(names.join(', ')) + '</div>') : '';
+  var btnLabel = joined ? t("cancelGoing") : t("imGoing");
+  return '' +
+    '<div class="rsvp-block">' +
+      countLine + namesLine +
+      '<button class="rsvp-btn'+(joined ? ' joined' : '')+'" data-rsvp-toggle="'+esc(e.rsvpKey)+'" data-rsvp-join="'+(joined ? '0' : '1')+'">'+(joined ? '✓ ' : '')+esc(btnLabel)+'</button>' +
+    '</div>';
+}
+
 function fieldServiceCardHtml(e, key, expanded) {
   var c = CATS.fieldService;
   var detailsHtml = '';
@@ -647,6 +725,7 @@ function fieldServiceCardHtml(e, key, expanded) {
       (e.mapLink ? '<a class="map-link" href="'+esc(e.mapLink)+'" target="_blank" rel="noreferrer">'+esc(t("viewMap"))+'</a>' : '') +
       (e.areas ? '<div class="areas-text">'+areasHtml(e)+'</div>' : '') +
       (e.conductor ? '<div class="card-foot"><span class="role-label">'+esc(t("roleConductor"))+'</span><span class="person-tag">'+esc(e.conductor)+'</span></div>' : '') +
+      rsvpBlockHtml(e) +
     '</div>';
   }
   return '' +
@@ -1079,6 +1158,14 @@ document.addEventListener("click", function(e) {
     var wkey = toggleBtn.getAttribute("data-toggle-week");
     state.expandedWeeks[wkey] = !state.expandedWeeks[wkey];
     renderMain();
+    return;
+  }
+
+  var rsvpBtn = e.target.closest("[data-rsvp-toggle]");
+  if (rsvpBtn) {
+    var eventKey = rsvpBtn.getAttribute("data-rsvp-toggle");
+    var wantsJoin = rsvpBtn.getAttribute("data-rsvp-join") === "1";
+    toggleRsvp(eventKey, wantsJoin, rsvpBtn);
     return;
   }
 
