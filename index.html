@@ -194,6 +194,7 @@
   .expand-hint { font-family: 'IBM Plex Mono', monospace; font-size: calc(11px * var(--text-scale)); color: var(--cat-olive); margin-top: 4px; }
   .rsvp-block { margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border-soft); }
   .rsvp-count { font-size: calc(13px * var(--text-scale)); font-weight: 600; color: var(--ink); margin-bottom: 4px; }
+  .rsvp-mini-badge { display: inline-block; font-size: calc(11.5px * var(--text-scale)); font-weight: 600; color: var(--sync-text); background: var(--sync-bg); border-radius: 999px; padding: 4px 10px; margin: 4px 0 2px; }
   .rsvp-names { font-size: calc(12px * var(--text-scale)); color: var(--ink-muted); margin-bottom: 10px; }
   .rsvp-btn { width: 100%; border: 1px solid var(--ink-strong); background: var(--ink-strong); color: var(--ink-on-strong); border-radius: 10px; padding: 11px 16px; font-size: calc(13.5px * var(--text-scale)); font-weight: 600; }
   .rsvp-btn.joined { background: var(--chip-bg2); color: var(--ink); border-color: var(--border-strong); }
@@ -599,6 +600,12 @@ function toggleRsvp(eventKey, wantsJoin, btnEl) {
         entry.youJoined = json.youJoined;
       }
       renderMain();
+      // The modal isn't touched by renderMain() (it's a separate overlay) —
+      // if it's open and showing this same event, refresh it explicitly so
+      // its button/count doesn't go stale.
+      if (currentModalItem && currentModalItem.raw && currentModalItem.raw.rsvpKey === eventKey) {
+        openModal(currentModalItem);
+      }
     })
     .catch(function() {
       btnEl.textContent = t("rsvpFailed");
@@ -688,6 +695,10 @@ function feedCardHtml(item, todayStr) {
   var c = CATS[item.cat];
   var rel = relLabel(item.iso, todayStr);
   var peopleHtml = item.people.map(function(p){ return '<span class="person-tag">'+esc(p)+'</span>'; }).join("");
+  var rsvpBadge = '';
+  if (item.cat === "fieldService" && item.raw.rsvpKey && item.raw.rsvpCount > 0) {
+    rsvpBadge = '<span class="rsvp-mini-badge">👥 ' + item.raw.rsvpCount + esc(t("goingLabel")) + '</span>';
+  }
   return '' +
     '<div class="card clickable" style="border-top-color:'+c.color+'" data-open-item="'+item.key+'">' +
       pinHtml(c.color) +
@@ -698,6 +709,7 @@ function feedCardHtml(item, todayStr) {
       '<div class="cat-label">'+esc(c.label)+(c.sub ? ' <span class="sub-faint">· '+esc(c.sub)+'</span>' : '')+'</div>' +
       '<div class="card-title">'+esc(item.title)+'</div>' +
       (item.subtitle ? '<div class="card-sub">'+esc(item.subtitle)+'</div>' : '') +
+      (rsvpBadge ? '<div>'+rsvpBadge+'</div>' : '') +
       '<div class="card-foot">' + (item.time ? '<span class="time-tag">'+esc(item.time)+'</span>' : '') + peopleHtml + '</div>' +
     '</div>';
 }
@@ -1120,7 +1132,9 @@ function renderMain() {
   }
 }
 
+var currentModalItem = null;
 function openModal(item) {
+  currentModalItem = item;
   var c = CATS[item.cat];
   var peopleHtml = item.people.length ? '<div class="card-foot">' + item.people.map(function(p){ return '<span class="person-tag">'+esc(p)+'</span>'; }).join("") + '</div>' : '';
   document.getElementById("modalContent").innerHTML =
@@ -1131,10 +1145,11 @@ function openModal(item) {
     (item.subtitle ? '<div class="modal-sub">'+esc(item.subtitle)+'</div>' : '') +
     (item.raw.areas ? '<div class="areas-text">'+areasHtml(item.raw)+'</div>' : '') +
     (item.raw.mapLink ? '<a class="map-link" href="'+esc(item.raw.mapLink)+'" target="_blank" rel="noreferrer">'+esc(t("viewMap"))+'</a>' : '') +
-    peopleHtml;
+    peopleHtml +
+    rsvpBlockHtml(item.raw);
   document.getElementById("modalBackdrop").classList.remove("hidden");
 }
-function closeModal() { document.getElementById("modalBackdrop").classList.add("hidden"); }
+function closeModal() { currentModalItem = null; document.getElementById("modalBackdrop").classList.add("hidden"); }
 
 /* ---------- Event delegation ---------- */
 document.addEventListener("click", function(e) {
