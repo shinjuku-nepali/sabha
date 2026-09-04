@@ -133,6 +133,8 @@
   .next-banner-title { font-family: 'Fraunces', serif; font-weight: 600; font-size: calc(19px * var(--text-scale)); margin-bottom: 4px; }
   .next-banner-meta { font-size: calc(13px * var(--text-scale)); opacity: .9; }
   .next-banner-foot { margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .next-banner .weather-badge { background: rgba(255,255,255,.14); color: inherit; }
+  .next-banner .weather-badge.rain-warn { background: rgba(255,180,160,.28); }
   .next-banner-cta { max-width: 1100px; margin: 0 auto 14px; background: var(--chip-bg2); border: 1px dashed var(--border-strong); border-radius: 12px; padding: 12px 16px; font-size: calc(13px * var(--text-scale)); color: var(--ink-muted); display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
   .sync-bar { max-width: 1100px; margin: 0 auto 12px; background: var(--sync-bg); color: var(--sync-text); border-radius: 8px; padding: 8px 14px; font-size: calc(12.5px * var(--text-scale)); }
   .err-bar { max-width: 1100px; margin: 0 auto 12px; background: var(--danger-bg); color: var(--danger-text); border-radius: 8px; padding: 8px 14px; font-size: calc(12.5px * var(--text-scale)); }
@@ -157,6 +159,8 @@
   .my-name-row .search-input { flex: 1; min-width: 200px; }
 
   .my-name-bar { display: flex; justify-content: space-between; align-items: center; max-width: 1100px; margin: 0 auto 14px; font-size: calc(13.5px * var(--text-scale)); color: var(--ink-muted); }
+  .participation-note { max-width: 1100px; margin: 0 auto 16px; font-size: calc(13.5px * var(--text-scale)); color: var(--sync-text); background: var(--sync-bg); border-radius: 10px; padding: 10px 14px; }
+  .participation-note.quiet { color: var(--ink-muted); background: var(--chip-bg2); }
 
   main { max-width: 1100px; margin: 0 auto; }
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; align-items: start; }
@@ -176,6 +180,8 @@
   .date-stamp { font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: calc(12px * var(--text-scale)); background: var(--ink-strong); color: var(--ink-on-strong); border-radius: 6px; padding: 3px 8px; }
   .rel-badge { font-family: 'IBM Plex Mono', monospace; font-size: calc(10px * var(--text-scale)); background: var(--ink-strong); color: var(--ink-on-strong); border-radius: 6px; padding: 3px 8px; }
   .day-tag { font-size: calc(12px * var(--text-scale)); color: var(--ink-muted); }
+  .weather-badge { font-size: calc(11.5px * var(--text-scale)); font-weight: 600; color: var(--cat-blue); background: var(--cat-blue-tint); border-radius: 999px; padding: 4px 9px; white-space: nowrap; }
+  .weather-badge.rain-warn { color: var(--danger-text); background: var(--danger-bg); }
   .time-tag { font-family: 'IBM Plex Mono', monospace; font-size: calc(11px * var(--text-scale)); background: var(--ink-on-strong); border: 1px solid var(--border-soft); border-radius: 6px; padding: 3px 7px; }
   .num-tag { font-family: 'IBM Plex Mono', monospace; font-size: calc(11px * var(--text-scale)); color: var(--ink-faint); }
   .person-tag { font-size: calc(12px * var(--text-scale)); background: var(--bg); border-radius: 999px; padding: 3px 10px; font-weight: 500; display: inline-block; }
@@ -470,6 +476,10 @@ var I18N = {
   goingNamesPrefix: { ne: "जाने: ", ja: "参加者: " },
   setNameToJoin: { ne: "सहभागी हुन पहिले आफ्नो नाम राख्नुहोस्", ja: "参加するには先に名前を登録してください" },
   rsvpFailed: { ne: "पुन: प्रयास गर्नुहोस्, केही समस्या भयो।", ja: "エラーが発生しました。もう一度お試しください。" },
+  rainWarning: { ne: "छाता ल्याउनुहोस्", ja: "傘をお持ちください" },
+  participationPrefix: { ne: "तपाईंले क्षेत्र सेवामा ", ja: "これまで野外奉仕に " },
+  participationSuffix: { ne: " पटक सहभागिता जनाउनुभएको छ", ja: " 回参加登録しました" },
+  participationZero: { ne: "अझै कुनै क्षेत्र सेवा सहभागिता दर्ता भएको छैन। यस हप्ता जानुहोस्!", ja: "まだ野外奉への参加登録がありません。今週参加してみましょう！" },
 };
 
 function getLang() {
@@ -662,7 +672,7 @@ function buildSearchIndex() {
   var rows = [];
   Object.keys(DATA.fieldService || {}).forEach(function(m) {
     (DATA.fieldService[m] || []).forEach(function(e) {
-      if (e.conductor) rows.push({ cat:"fieldService", iso:e.iso, time:e.time, name:e.conductor, role:t("roleConductor"), context:e.place || e.areas || t("catFieldServiceLabel") });
+      if (e.conductor) rows.push({ cat:"fieldService", iso:e.iso, time:e.time, name:e.conductor, role:t("roleConductor"), context:e.place || e.areas || t("catFieldServiceLabel"), raw:e });
     });
   });
   (DATA.publicTalks || []).forEach(function(talk) {
@@ -696,8 +706,12 @@ function feedCardHtml(item, todayStr) {
   var rel = relLabel(item.iso, todayStr);
   var peopleHtml = item.people.map(function(p){ return '<span class="person-tag">'+esc(p)+'</span>'; }).join("");
   var rsvpBadge = '';
-  if (item.cat === "fieldService" && item.raw.rsvpKey && item.raw.rsvpCount > 0) {
-    rsvpBadge = '<span class="rsvp-mini-badge">👥 ' + item.raw.rsvpCount + esc(t("goingLabel")) + '</span>';
+  var weatherBadge = '';
+  if (item.cat === "fieldService") {
+    if (item.raw.rsvpKey && item.raw.rsvpCount > 0) {
+      rsvpBadge = '<span class="rsvp-mini-badge">👥 ' + item.raw.rsvpCount + esc(t("goingLabel")) + '</span>';
+    }
+    weatherBadge = weatherBadgeHtml(item.raw);
   }
   return '' +
     '<div class="card clickable" style="border-top-color:'+c.color+'" data-open-item="'+item.key+'">' +
@@ -710,7 +724,7 @@ function feedCardHtml(item, todayStr) {
       '<div class="card-title">'+esc(item.title)+'</div>' +
       (item.subtitle ? '<div class="card-sub">'+esc(item.subtitle)+'</div>' : '') +
       (rsvpBadge ? '<div>'+rsvpBadge+'</div>' : '') +
-      '<div class="card-foot">' + (item.time ? '<span class="time-tag">'+esc(item.time)+'</span>' : '') + peopleHtml + '</div>' +
+      '<div class="card-foot">' + (item.time ? '<span class="time-tag">'+esc(item.time)+'</span>' : '') + weatherBadge + peopleHtml + '</div>' +
     '</div>';
 }
 
@@ -747,6 +761,7 @@ function fieldServiceCardHtml(e, key, expanded) {
         '<span class="date-stamp">'+esc(e.iso ? fmtShort(e.iso) : e.date)+'</span>' +
         '<span class="day-tag">'+esc(e.day)+'</span>' +
         (e.time ? '<span class="time-tag">'+esc(e.time.trim())+'</span>' : '') +
+        weatherBadgeHtml(e) +
       '</div>' +
       '<div class="card-title">'+esc(e.place || t("placeTbd"))+'</div>' +
       '<div class="expand-hint">'+(expanded ? esc(t("hideDetails")) : esc(t("showDetails")))+'</div>' +
@@ -945,6 +960,7 @@ function renderNextAssignmentBanner() {
   if (!next) { el.innerHTML = ""; return; }
 
   var rel = relLabel(next.iso, todayStr);
+  var weatherBadge = next.cat === "fieldService" && next.raw ? weatherBadgeHtml(next.raw) : "";
   el.innerHTML =
     '<div class="next-banner">' +
       '<div class="next-banner-eyebrow">' + esc(t("yourNextAssignment")) + '</div>' +
@@ -952,6 +968,7 @@ function renderNextAssignmentBanner() {
       '<div class="next-banner-meta">' + esc(fmtFull(next.iso)) + (rel ? ' · ' + esc(rel) : '') + (next.time ? ' · ' + esc(next.time) : '') + '</div>' +
       '<div class="next-banner-foot">' +
         '<span class="person-tag" style="background:rgba(255,255,255,.14);color:inherit">' + esc(next.role) + '</span>' +
+        weatherBadge +
       '</div>' +
     '</div>';
 }
@@ -1077,11 +1094,19 @@ function renderMain() {
     var q = myName.trim().toLowerCase();
     var mine = searchIdxCache.filter(function(r){ return r.name.toLowerCase().indexOf(q) !== -1 && r.iso && r.iso >= todayStr; });
     mine.sort(function(a,b){ return a.iso < b.iso ? -1 : a.iso > b.iso ? 1 : 0; });
+    var participation = DATA.myParticipationCount;
+    var participationHtml = '';
+    if (typeof participation === "number") {
+      participationHtml = participation > 0
+        ? '<div class="participation-note">🙏 ' + esc(t("participationPrefix")) + participation + esc(t("participationSuffix")) + '</div>'
+        : '<div class="participation-note quiet">' + esc(t("participationZero")) + '</div>';
+    }
     main.innerHTML =
       '<div class="my-name-bar">' +
         '<span>' + esc(t("youAre")) + '<strong>'+esc(myName)+'</strong></span>' +
         '<button class="link-btn" id="myNameChangeBtn">' + esc(t("change")) + '</button>' +
       '</div>' +
+      participationHtml +
       '<div class="grid">' +
       (mine.length === 0 ? '<div class="empty-state">"'+esc(myName)+'"'+esc(t("noUpcomingFor"))+'</div>' : '') +
       mine.map(searchResultCardHtml).join("") +
@@ -1132,15 +1157,98 @@ function renderMain() {
   }
 }
 
+/* ============================================================
+   WEATHER — shows a compact forecast on outdoor Field Service
+   cards, since they meet at parks. Uses Open-Meteo, a free
+   public weather API that needs no API key and is safe to call
+   directly from the browser (no Code.gs / Apps Script involved
+   at all for this feature). Tokyo-wide forecast (not per-park —
+   good enough for "dress warm" / "bring an umbrella" purposes).
+   Fails silently if the weather API is unreachable; the rest of
+   the dashboard is unaffected either way.
+   ============================================================ */
+var WEATHER_LAT = 35.6938, WEATHER_LON = 139.7034; // Shinjuku, Tokyo
+var WEATHER_BY_DATE = {}; // iso date -> {tempMax, tempMin, precip, code}
+
+var WEATHER_CODES = {
+  0:  { icon: "☀️", ne: "खुला आकाश", ja: "快晴" },
+  1:  { icon: "🌤️", ne: "प्रायः खुला", ja: "晴れ" },
+  2:  { icon: "⛅", ne: "आंशिक बदली", ja: "晴れ時々曇り" },
+  3:  { icon: "☁️", ne: "बदली", ja: "くもり" },
+  45: { icon: "🌫️", ne: "कुहिरो", ja: "霧" },
+  48: { icon: "🌫️", ne: "कुहिरो", ja: "霧" },
+  51: { icon: "🌦️", ne: "हल्का सिमसिम", ja: "小雨" },
+  53: { icon: "🌦️", ne: "सिमसिम पानी", ja: "小雨" },
+  55: { icon: "🌦️", ne: "सिमसिम पानी", ja: "小雨" },
+  61: { icon: "🌧️", ne: "पानी पर्ने", ja: "雨" },
+  63: { icon: "🌧️", ne: "पानी पर्ने", ja: "雨" },
+  65: { icon: "🌧️", ne: "धेरै पानी", ja: "強い雨" },
+  66: { icon: "🌧️", ne: "जमेको पानी", ja: "着氷性の雨" },
+  67: { icon: "🌧️", ne: "जमेको पानी", ja: "着氷性の雨" },
+  71: { icon: "❄️", ne: "हिउँ", ja: "雪" },
+  73: { icon: "❄️", ne: "हिउँ", ja: "雪" },
+  75: { icon: "❄️", ne: "धेरै हिउँ", ja: "大雪" },
+  77: { icon: "❄️", ne: "हिउँ", ja: "雪" },
+  80: { icon: "🌦️", ne: "पानीको झरी", ja: "にわか雨" },
+  81: { icon: "🌦️", ne: "पानीको झरी", ja: "にわか雨" },
+  82: { icon: "🌧️", ne: "ठूलो झरी", ja: "激しいにわか雨" },
+  85: { icon: "🌨️", ne: "हिउँको झरी", ja: "にわか雪" },
+  86: { icon: "🌨️", ne: "हिउँको झरी", ja: "にわか雪" },
+  95: { icon: "⛈️", ne: "आँधीपानी", ja: "雷雨" },
+  96: { icon: "⛈️", ne: "आँधीपानी", ja: "雷雨" },
+  99: { icon: "⛈️", ne: "आँधीपानी", ja: "雷雨" },
+};
+
+function fetchWeather() {
+  var url = "https://api.open-meteo.com/v1/forecast?latitude=" + WEATHER_LAT + "&longitude=" + WEATHER_LON +
+    "&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,weathercode&timezone=Asia%2FTokyo&forecast_days=16";
+  fetch(url)
+    .then(function(res) { return res.json(); })
+    .then(function(json) {
+      if (!json || !json.daily || !json.daily.time) return;
+      var d = json.daily;
+      for (var i = 0; i < d.time.length; i++) {
+        WEATHER_BY_DATE[d.time[i]] = {
+          tempMax: Math.round(d.temperature_2m_max[i]),
+          tempMin: Math.round(d.temperature_2m_min[i]),
+          precip: d.precipitation_probability_max[i],
+          code: d.weathercode[i],
+        };
+      }
+      renderMain(); // progressive enhancement: re-render once weather arrives
+    })
+    .catch(function() { /* weather is a nice-to-have; fail silently */ });
+}
+
+// Skip weather for indoor/virtual entries (e.g. "zoom") — only
+// meaningful for real outdoor meeting spots.
+function isOutdoorPlace(place) {
+  if (!place) return false;
+  return place.trim().toLowerCase() !== "zoom";
+}
+
+function weatherBadgeHtml(entry) {
+  if (!entry.iso || !isOutdoorPlace(entry.place)) return "";
+  var w = WEATHER_BY_DATE[entry.iso];
+  if (!w) return "";
+  var info = WEATHER_CODES[w.code] || { icon: "🌡️", ne: "", ja: "" };
+  var label = getLang() === "ja" ? info.ja : info.ne;
+  var rainWarn = (w.precip !== null && w.precip >= 50);
+  var text = info.icon + " " + w.tempMax + "°/" + w.tempMin + "°" + (label ? " " + label : "") +
+    (w.precip !== null ? " · " + w.precip + "%" : "");
+  return '<span class="weather-badge'+(rainWarn ? ' rain-warn' : '')+'" title="'+(rainWarn ? esc(t("rainWarning")) : '')+'">'+esc(text)+'</span>';
+}
+
 var currentModalItem = null;
 function openModal(item) {
   currentModalItem = item;
   var c = CATS[item.cat];
   var peopleHtml = item.people.length ? '<div class="card-foot">' + item.people.map(function(p){ return '<span class="person-tag">'+esc(p)+'</span>'; }).join("") + '</div>' : '';
+  var weatherBadge = item.cat === "fieldService" ? weatherBadgeHtml(item.raw) : "";
   document.getElementById("modalContent").innerHTML =
     '<button class="modal-close" id="modalCloseBtn">✕</button>' +
     catChipHtml(item.cat) +
-    '<div class="modal-date">'+esc(fmtFull(item.iso))+'</div>' +
+    '<div class="modal-date">'+esc(fmtFull(item.iso))+(weatherBadge ? ' &nbsp;' + weatherBadge : '')+'</div>' +
     '<h2 class="modal-title">'+esc(item.title)+'</h2>' +
     (item.subtitle ? '<div class="modal-sub">'+esc(item.subtitle)+'</div>' : '') +
     (item.raw.areas ? '<div class="areas-text">'+areasHtml(item.raw)+'</div>' : '') +
@@ -1232,6 +1340,7 @@ function handleCredentialResponse(response) {
       document.getElementById("appRoot").style.display = "block";
       render();
       startAutoRefresh();
+      fetchWeather();
     })
     .catch(function(err) {
       showSigninError(t("loadFailed") + " (" + err.message + ")");
@@ -1239,7 +1348,7 @@ function handleCredentialResponse(response) {
 }
 
 /* ============================================================
-   AUTO-REFRESH — quietly re-fetches data every 30 minutes so
+   AUTO-REFRESH — quietly re-fetches data every 15 minutes so
    the dashboard stays current without needing a manual reload.
    Matches the backend's CACHE_SECONDS in Code.gs.
 
@@ -1253,7 +1362,7 @@ function handleCredentialResponse(response) {
    ============================================================ */
 var lastIdToken = null;
 var autoRefreshTimer = null;
-var AUTO_REFRESH_MS = 30 * 60 * 1000;
+var AUTO_REFRESH_MS = 15 * 60 * 1000;
 var lastRefreshAt = 0;
 
 function startAutoRefresh() {
@@ -1289,6 +1398,7 @@ function silentRefresh() {
       feedCache = null;
       searchIdxCache = null;
       render();
+      fetchWeather();
     })
     .catch(function() { /* network hiccup — try again on the next interval */ });
 }
