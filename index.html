@@ -205,6 +205,24 @@
   .rsvp-btn { width: 100%; border: 1px solid var(--ink-strong); background: var(--ink-strong); color: var(--ink-on-strong); border-radius: 10px; padding: 11px 16px; font-size: calc(13.5px * var(--text-scale)); font-weight: 600; }
   .rsvp-btn.joined { background: var(--chip-bg2); color: var(--ink); border-color: var(--border-strong); }
   .rsvp-btn:disabled { opacity: .6; }
+
+  .territory-group { margin-bottom: 22px; }
+  .territory-group-title { font-family: 'Fraunces', serif; font-weight: 600; font-size: calc(18px * var(--text-scale)); margin: 0 auto 10px; max-width: 1100px; color: var(--ink-strong); }
+  .territory-card { display: flex; flex-direction: column; gap: 4px; }
+  .territory-address { font-size: calc(14.5px * var(--text-scale)); font-weight: 600; color: var(--ink); }
+  .territory-meta { font-size: calc(12px * var(--text-scale)); color: var(--ink-muted); }
+  .territory-remarks { font-size: calc(11.5px * var(--text-scale)); color: var(--ink-faint); font-style: italic; }
+  .territory-mark-btn {
+    align-self: flex-end; margin-top: 8px; width: 44px; height: 44px; border-radius: 10px;
+    font-size: calc(20px * var(--text-scale)); font-weight: 700; border: 1px solid transparent;
+    display: flex; align-items: center; justify-content: center; transition: transform .1s ease;
+  }
+  .territory-mark-btn:active { transform: scale(0.92); }
+  .territory-mark-btn.mark-blank { color: var(--ink-faint); background: var(--chip-bg2); border-color: var(--border-strong); border-style: dashed; }
+  .territory-mark-btn.mark-circle { color: var(--sync-text); background: var(--sync-bg); }
+  .territory-mark-btn.mark-x { color: var(--danger-text); background: var(--danger-bg); }
+  .territory-mark-btn.mark-triangle { color: var(--cat-olive); background: var(--cat-olive-tint); }
+  .territory-mark-btn.mark-error { border-color: var(--danger-text); }
   .agenda { margin-top: 12px; border-top: 1px dashed var(--border-soft); padding-top: 10px; display: flex; flex-direction: column; gap: 6px; }
   .agenda-row, .agenda-section { display: flex; align-items: baseline; gap: 8px; font-size: calc(12.5px * var(--text-scale)); }
   .agenda-section { margin-top: 8px; }
@@ -327,6 +345,8 @@
   }
 </style>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-messaging-compat.js"></script>
 </head>
 <body>
 
@@ -401,6 +421,22 @@ var APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby6QId6O9vHWMcA-s
 // into GOOGLE_OAUTH_CLIENT_ID in Code.gs so the backend can
 // verify tokens were issued for this same client.
 var GOOGLE_CLIENT_ID = "752070145895-49kenu29mj4jfei3di41nahpvkv69ded.apps.googleusercontent.com";
+
+// From Firebase Console > Project settings > General > Your apps
+// (Web app) — these are all public identifiers, safe to expose
+// (same as GOOGLE_CLIENT_ID above, no secret involved). The exact
+// same values also need to go into firebase-messaging-sw.js.
+var FIREBASE_CONFIG = {
+  apiKey: "AIzaSyBTQ4aj5RN5pw3bbXlvYVPotgDqxNIRCDY",
+  authDomain: "web-portal-4778d.firebaseapp.com",
+  projectId: "web-portal-4778d",
+  storageBucket: "web-portal-4778d.firebasestorage.app",
+  messagingSenderId: "723506440029",
+  appId: "1:723506440029:web:b1b607456f46b6c7092ab4",
+};
+// Firebase Console > Project settings > Cloud Messaging > Web Push
+// certificates > "Key pair"
+var FIREBASE_VAPID_KEY = "BH3oZKbiLPQ47WK3M3LXjU0BpjIUjCDWA3NZw4tQzCYjIUA_t4XXD5LnTLo_bbafv9POeOxAIB7MsDbpAeusPC0";
 
 var DATA = null;
 
@@ -479,7 +515,14 @@ var I18N = {
   rainWarning: { ne: "छाता ल्याउनुहोस्", ja: "傘をお持ちください" },
   participationPrefix: { ne: "तपाईंले क्षेत्र सेवामा ", ja: "これまで野外奉仕に " },
   participationSuffix: { ne: " पटक सहभागिता जनाउनुभएको छ", ja: " 回参加登録しました" },
-  participationZero: { ne: "अझै कुनै क्षेत्र सेवा सहभागिता दर्ता भएको छैन। यस हप्ता जानुहोस्!", ja: "まだ野外奉への参加登録がありません。今週参加してみましょう！" },
+  participationZero: { ne: "अझै कुनै क्षेत्र सेवा सहभागिता दर्ता भएको छैन। यस हप्ता जानुहोस्!", ja: "まだ野外奉仕への参加登録がありません。今週参加してみましょう！" },
+  enableNotifications: { ne: "🔔 सूचना सक्षम गर्नुहोस्", ja: "🔔 通知を有効にする" },
+  notificationsEnabled: { ne: "✓ सूचना सक्षम छ", ja: "✓ 通知は有効です" },
+  notificationSetupFailed: { ne: "सूचना सक्षम गर्न सकिएन। यो एप पहिले आफ्नो होम स्क्रिनमा थप्नुहोस् र फेरि प्रयास गर्नुहोस्।", ja: "通知を有効にできませんでした。まずこのアプリをホーム画面に追加してから、もう一度お試しください。" },
+  notificationPermissionDenied: { ne: "सूचना अनुमति अस्वीकार गरियो। फोनको सेटिङबाट अनुमति दिनुहोस्।", ja: "通知の許可が拒否されました。設定アプリから許可してください。" },
+  tabTerritory: { ne: "टेरिटोरी", en: "Territory", ja: "テリトリー" },
+  territoryUpdateFailed: { ne: "अपडेट गर्न सकिएन, फेरि प्रयास गर्नुहोस्।", ja: "更新できませんでした。もう一度お試しください。" },
+  territoryNoAddresses: { ne: "यो क्षेत्रमा कुनै ठेगाना भेटिएन।", ja: "この区域には住所が見つかりませんでした。" },
 };
 
 function getLang() {
@@ -532,7 +575,7 @@ refreshCatsLabels();
 var NEPALI_MONTHS_EN = { "01":"January","02":"February","03":"March","04":"April","05":"May","06":"June","07":"July","08":"August","09":"September","10":"October","11":"November","12":"December" };
 var SECTION_HEADERS = { "बाइबलमा पाइने अनमोल धन":1, "कुराकानी गर्ने सीप तिखारौँ":1, "ख्रीष्टियन जीवन":1 };
 
-var state = { tab: "upcoming", month: null, query: "", expandedWeeks: {}, expandedFS: {}, openItem: null };
+var state = { tab: "upcoming", month: null, territoryMonth: null, query: "", expandedWeeks: {}, expandedFS: {}, openItem: null };
 
 function monthLabel(ymKey) {
   var parts = ymKey.split("-");
@@ -622,6 +665,68 @@ function toggleRsvp(eventKey, wantsJoin, btnEl) {
       btnEl.disabled = false;
       setTimeout(function() { btnEl.textContent = originalText; }, 2500);
     });
+}
+
+/* ============================================================
+   PUSH NOTIFICATIONS — "Enable Notifications" in My Assignments.
+   Requires the app to be added to the Home Screen on iOS/iPadOS
+   (a Safari/OS rule, not something we can work around); on
+   Android/desktop Chrome it works from a regular browser tab too.
+   ============================================================ */
+var NOTIFICATIONS_ENABLED_KEY = "programDashboardNotificationsEnabled";
+
+function notificationsAlreadyEnabled() {
+  try { return localStorage.getItem(NOTIFICATIONS_ENABLED_KEY) === "1"; } catch (_) { return false; }
+}
+
+function enableNotifications(btnEl) {
+  var myName = getMyName();
+  if (!myName || !lastIdToken) return;
+
+  var originalText = btnEl.textContent;
+  btnEl.disabled = true;
+  btnEl.textContent = "...";
+
+  if (!("serviceWorker" in navigator) || !("Notification" in window)) {
+    showNotificationError(btnEl, originalText, t("notificationSetupFailed"));
+    return;
+  }
+
+  navigator.serviceWorker.register("firebase-messaging-sw.js")
+    .then(function(registration) {
+      return Notification.requestPermission().then(function(permission) {
+        if (permission !== "granted") {
+          throw new Error("permission_denied");
+        }
+        var app = firebase.apps.length ? firebase.apps[0] : firebase.initializeApp(FIREBASE_CONFIG);
+        var messaging = firebase.messaging();
+        return messaging.getToken({ vapidKey: FIREBASE_VAPID_KEY, serviceWorkerRegistration: registration });
+      });
+    })
+    .then(function(fcmToken) {
+      if (!fcmToken) throw new Error("no_token");
+      return fetch(APPS_SCRIPT_URL, {
+        method: "POST",
+        body: JSON.stringify({ token: lastIdToken, type: "register_push", name: myName, fcmToken: fcmToken }),
+      }).then(function(res) { return res.json(); });
+    })
+    .then(function(json) {
+      if (!json || json.error) throw new Error(json && json.error);
+      try { localStorage.setItem(NOTIFICATIONS_ENABLED_KEY, "1"); } catch (_) {}
+      btnEl.disabled = false;
+      btnEl.textContent = t("notificationsEnabled");
+      btnEl.classList.add("joined");
+    })
+    .catch(function(err) {
+      var msg = err && err.message === "permission_denied" ? t("notificationPermissionDenied") : t("notificationSetupFailed");
+      showNotificationError(btnEl, originalText, msg);
+    });
+}
+
+function showNotificationError(btnEl, originalText, msg) {
+  btnEl.disabled = false;
+  btnEl.textContent = msg;
+  setTimeout(function() { btnEl.textContent = originalText; }, 4000);
 }
 
 function esc(str) {
@@ -841,6 +946,72 @@ function searchResultCardHtml(r, i) {
     '</div>';
 }
 
+/* ============================================================
+   TERRITORY — tap-to-cycle marks (blank -> ○ -> × -> △ -> blank)
+   ============================================================ */
+var MARK_CIRCLE = "○", MARK_X = "×", MARK_TRIANGLE = "△";
+var MARK_CYCLE_ORDER = ["", MARK_CIRCLE, MARK_X, MARK_TRIANGLE];
+
+function nextMarkInCycle(current) {
+  var idx = MARK_CYCLE_ORDER.indexOf(current || "");
+  return MARK_CYCLE_ORDER[(idx + 1) % MARK_CYCLE_ORDER.length];
+}
+function markClass(mark) {
+  if (mark === MARK_CIRCLE) return "mark-circle";
+  if (mark === MARK_X) return "mark-x";
+  if (mark === MARK_TRIANGLE) return "mark-triangle";
+  return "mark-blank";
+}
+
+function territoryCardHtml(addr, fileId, iso) {
+  var mark = (addr.marks && addr.marks[iso]) || "";
+  var display = mark || "−";
+  var metaBits = [addr.district, addr.congregation].filter(Boolean).join(" · ");
+  return '' +
+    '<div class="card territory-card">' +
+      '<div class="territory-address">'+esc(addr.address)+'</div>' +
+      (metaBits ? '<div class="territory-meta">'+esc(metaBits)+'</div>' : '') +
+      (addr.remarks ? '<div class="territory-remarks">'+esc(addr.remarks)+'</div>' : '') +
+      '<button class="territory-mark-btn '+markClass(mark)+'" data-mark-fileid="'+esc(fileId)+'" data-mark-row="'+addr.row+'" data-mark-iso="'+esc(iso)+'" data-mark-current="'+esc(mark)+'">'+esc(display)+'</button>' +
+    '</div>';
+}
+
+function toggleTerritoryMark(btnEl) {
+  var fileId = btnEl.getAttribute("data-mark-fileid");
+  var row = parseInt(btnEl.getAttribute("data-mark-row"), 10);
+  var iso = btnEl.getAttribute("data-mark-iso");
+  var current = btnEl.getAttribute("data-mark-current") || "";
+  var next = nextMarkInCycle(current);
+
+  btnEl.textContent = next || "−";
+  btnEl.className = "territory-mark-btn " + markClass(next);
+  btnEl.setAttribute("data-mark-current", next);
+  btnEl.disabled = true;
+
+  fetch(APPS_SCRIPT_URL, {
+    method: "POST",
+    body: JSON.stringify({ token: lastIdToken, type: "set_territory_mark", fileId: fileId, row: row, iso: iso, mark: next }),
+  })
+    .then(function(res) { return res.json(); })
+    .then(function(json) {
+      btnEl.disabled = false;
+      if (!json || json.error) throw new Error(json && json.error);
+      (DATA.territories || []).forEach(function(terr) {
+        if (terr.fileId !== fileId) return;
+        terr.addresses.forEach(function(addr) {
+          if (addr.row === row) addr.marks[iso] = json.mark;
+        });
+      });
+    })
+    .catch(function() {
+      btnEl.disabled = false;
+      btnEl.textContent = current || "−";
+      btnEl.className = "territory-mark-btn " + markClass(current) + " mark-error";
+      btnEl.setAttribute("data-mark-current", current);
+      setTimeout(function() { btnEl.classList.remove("mark-error"); }, 1500);
+    });
+}
+
 /* ---------- Text size toggle ---------- */
 var TEXT_SCALE_MIN = 0.8;
 var TEXT_SCALE_MAX = 1.6;
@@ -1006,12 +1177,14 @@ function renderTabs() {
   tabsEl.classList.remove("hidden");
   var up = tabInfo("tabUpcoming");
   var mine = tabInfo("tabMyProgram");
+  var territoryInfo = tabInfo("tabTerritory");
   var defs = [
     ["upcoming", up.label, up.sub],
     ["myProgram", mine.label, mine.sub],
     ["fieldService",CATS.fieldService.label,CATS.fieldService.sub],
     ["lifeMinistry",CATS.lifeMinistry.label,CATS.lifeMinistry.sub],
     ["publicTalks",CATS.publicTalks.label,CATS.publicTalks.sub],
+    ["territory", territoryInfo.label, territoryInfo.sub],
   ];
   tabsEl.innerHTML = defs.map(function(d) {
     var active = state.tab === d[0];
@@ -1044,6 +1217,24 @@ function renderMonthTabs() {
     if (!months.length) months = allFsMonths; // fallback so the tab isn't empty if data hasn't caught up yet
   }
   if (state.tab === "lifeMinistry") months = Object.keys(DATA.lifeMinistry || {}).sort();
+
+  if (state.tab === "territory") {
+    var monthSet = {};
+    (DATA.territories || []).forEach(function(terr) { (terr.months || []).forEach(function(m) { monthSet[m] = 1; }); });
+    var allTerrMonths = Object.keys(monthSet).sort();
+    if (!allTerrMonths.length) { el.classList.add("hidden"); el.innerHTML = ""; return; }
+    if (!state.territoryMonth || allTerrMonths.indexOf(state.territoryMonth) === -1) {
+      var curKey = currentMonthKey();
+      state.territoryMonth = allTerrMonths.indexOf(curKey) !== -1 ? curKey : allTerrMonths[allTerrMonths.length - 1];
+    }
+    el.classList.remove("hidden");
+    el.innerHTML = allTerrMonths.map(function(m) {
+      var active = state.territoryMonth === m;
+      return '<button class="month-btn'+(active?" active":"")+'" data-territory-month="'+m+'">'+esc(monthLabel(m))+'</button>';
+    }).join("");
+    return;
+  }
+
   if (!months || !months.length) { el.classList.add("hidden"); el.innerHTML = ""; return; }
   if (!state.month || months.indexOf(state.month) === -1) state.month = months[0];
   el.classList.remove("hidden");
@@ -1065,6 +1256,26 @@ function renderMain() {
       (results.length === 0 ? '<div class="empty-state">"'+esc(state.query)+'" सँग मिल्ने कुनै जिम्मेवारी भेटिएन।</div>' : '') +
       results.map(searchResultCardHtml).join("") +
     '</div>';
+    return;
+  }
+
+  if (state.tab === "territory") {
+    var territories = DATA.territories || [];
+    var tMonth = state.territoryMonth;
+    var sectionsHtml = territories.map(function(terr) {
+      if (terr.error) {
+        return '<div class="territory-group"><div class="territory-group-title">'+esc(terr.name)+'</div>' +
+          '<div class="empty-state">⚠ ' + esc(terr.error) + '</div></div>';
+      }
+      var cardsHtml = terr.addresses.map(function(addr) {
+        return territoryCardHtml(addr, terr.fileId, tMonth);
+      }).join("");
+      return '<div class="territory-group">' +
+        '<div class="territory-group-title">'+esc(terr.name)+'</div>' +
+        '<div class="grid">' + (terr.addresses.length === 0 ? '<div class="empty-state">'+esc(t("territoryNoAddresses"))+'</div>' : cardsHtml) + '</div>' +
+      '</div>';
+    }).join("");
+    main.innerHTML = territories.length === 0 ? '<div class="empty-state">'+esc(t("territoryNoAddresses"))+'</div>' : sectionsHtml;
     return;
   }
 
@@ -1101,18 +1312,23 @@ function renderMain() {
         ? '<div class="participation-note">🙏 ' + esc(t("participationPrefix")) + participation + esc(t("participationSuffix")) + '</div>'
         : '<div class="participation-note quiet">' + esc(t("participationZero")) + '</div>';
     }
+    var notifBtnLabel = notificationsAlreadyEnabled() ? t("notificationsEnabled") : t("enableNotifications");
+    var notifBtnClass = notificationsAlreadyEnabled() ? "rsvp-btn joined" : "rsvp-btn";
     main.innerHTML =
       '<div class="my-name-bar">' +
         '<span>' + esc(t("youAre")) + '<strong>'+esc(myName)+'</strong></span>' +
         '<button class="link-btn" id="myNameChangeBtn">' + esc(t("change")) + '</button>' +
       '</div>' +
       participationHtml +
+      '<button class="'+notifBtnClass+'" id="enableNotifBtn" style="margin-bottom:16px;">' + esc(notifBtnLabel) + '</button>' +
       '<div class="grid">' +
       (mine.length === 0 ? '<div class="empty-state">"'+esc(myName)+'"'+esc(t("noUpcomingFor"))+'</div>' : '') +
       mine.map(searchResultCardHtml).join("") +
       '</div>';
     var changeBtn = document.getElementById("myNameChangeBtn");
     if (changeBtn) changeBtn.addEventListener("click", function() { clearMyName(); render(); });
+    var notifBtn = document.getElementById("enableNotifBtn");
+    if (notifBtn) notifBtn.addEventListener("click", function() { enableNotifications(notifBtn); });
     return;
   }
 
@@ -1269,6 +1485,9 @@ document.addEventListener("click", function(e) {
   var monthBtn = e.target.closest("[data-month]");
   if (monthBtn) { state.month = monthBtn.getAttribute("data-month"); renderMonthTabs(); renderMain(); return; }
 
+  var terrMonthBtn = e.target.closest("[data-territory-month]");
+  if (terrMonthBtn) { state.territoryMonth = terrMonthBtn.getAttribute("data-territory-month"); renderMonthTabs(); renderMain(); return; }
+
   var openBtn = e.target.closest("[data-open-item]");
   if (openBtn) {
     var key = openBtn.getAttribute("data-open-item");
@@ -1289,6 +1508,12 @@ document.addEventListener("click", function(e) {
     var eventKey = rsvpBtn.getAttribute("data-rsvp-toggle");
     var wantsJoin = rsvpBtn.getAttribute("data-rsvp-join") === "1";
     toggleRsvp(eventKey, wantsJoin, rsvpBtn);
+    return;
+  }
+
+  var markBtn = e.target.closest("[data-mark-fileid]");
+  if (markBtn) {
+    toggleTerritoryMark(markBtn);
     return;
   }
 
