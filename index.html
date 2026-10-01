@@ -523,6 +523,9 @@ var I18N = {
   tabTerritory: { ne: "टेरिटोरी", en: "Territory", ja: "テリトリー" },
   territoryUpdateFailed: { ne: "अपडेट गर्न सकिएन, फेरि प्रयास गर्नुहोस्।", ja: "更新できませんでした。もう一度お試しください。" },
   territoryNoAddresses: { ne: "यो क्षेत्रमा कुनै ठेगाना भेटिएन।", ja: "この区域には住所が見つかりませんでした。" },
+  loading: { ne: "लोड हुँदैछ...", ja: "読み込み中..." },
+  territoryBack: { ne: "← फर्कनुहोस्", ja: "← 戻る" },
+  territoryOpen: { ne: "खोल्नुहोस् ▸", ja: "開く ▸" },
 };
 
 function getLang() {
@@ -575,7 +578,14 @@ refreshCatsLabels();
 var NEPALI_MONTHS_EN = { "01":"January","02":"February","03":"March","04":"April","05":"May","06":"June","07":"July","08":"August","09":"September","10":"October","11":"November","12":"December" };
 var SECTION_HEADERS = { "बाइबलमा पाइने अनमोल धन":1, "कुराकानी गर्ने सीप तिखारौँ":1, "ख्रीष्टियन जीवन":1 };
 
-var state = { tab: "upcoming", month: null, territoryMonth: null, query: "", expandedWeeks: {}, expandedFS: {}, openItem: null };
+var state = { tab: "upcoming", month: null, query: "", expandedWeeks: {}, expandedFS: {}, openItem: null,
+  territoryFolderId: null, territoryFileId: null, territoryFileMonth: null };
+// Client-side caches so navigating back doesn't always re-fetch.
+var territoryFoldersCache = null;
+var territoryFilesCache = {}; // folderId -> [{id,name}]
+var territoryFileDataCache = {}; // fileId -> {name,fileId,months,addresses}
+var territoryRequestId = 0; // guards against a slow, stale fetch response
+// overwriting the view after the user has already navigated elsewhere
 
 function monthLabel(ymKey) {
   var parts = ymKey.split("-");
@@ -996,12 +1006,12 @@ function toggleTerritoryMark(btnEl) {
     .then(function(json) {
       btnEl.disabled = false;
       if (!json || json.error) throw new Error(json && json.error);
-      (DATA.territories || []).forEach(function(terr) {
-        if (terr.fileId !== fileId) return;
-        terr.addresses.forEach(function(addr) {
+      var cached = territoryFileDataCache[fileId];
+      if (cached) {
+        cached.addresses.forEach(function(addr) {
           if (addr.row === row) addr.marks[iso] = json.mark;
         });
-      });
+      }
     })
     .catch(function() {
       btnEl.disabled = false;
@@ -1010,6 +1020,85 @@ function toggleTerritoryMark(btnEl) {
       btnEl.setAttribute("data-mark-current", current);
       setTimeout(function() { btnEl.classList.remove("mark-error"); }, 1500);
     });
+}
+
+/* ---------- Territory: lazy fetch (folders -> files -> one file's data) ---------- */
+function fetchTerritoryFolders(callback) {
+  if (territoryFoldersCache) { callback(territoryFoldersCache); return; }
+  var url = APPS_SCRIPT_URL + (APPS_SCRIPT_URL.indexOf("?") === -1 ? "?" : "&") + "action=territory_folders&token=" + encodeURIComponent(lastIdToken);
+  fetch(url).then(function(r) { return r.json(); }).then(function(json) {
+    territoryFoldersCache = (json && json.folders) || [];
+    callback(territoryFoldersCache);
+  }).catch(function() { callback([]); });
+}
+
+function fetchTerritoryFiles(folderId, callback) {
+  if (territoryFilesCache[folderId]) { callback(territoryFilesCache[folderId]); return; }
+  var url = APPS_SCRIPT_URL + (APPS_SCRIPT_URL.indexOf("?") === -1 ? "?" : "&") + "action=territory_files&folderId=" + encodeURIComponent(folderId) + "&token=" + encodeURIComponent(lastIdToken);
+  fetch(url).then(function(r) { return r.json(); }).then(function(json) {
+    territoryFilesCache[folderId] = (json && json.files) || [];
+    callback(territoryFilesCache[folderId]);
+  }).catch(function() { callback([]); });
+}
+
+function fetchTerritoryFileData(fileId, callback) {
+  if (territoryFileDataCache[fileId]) { callback(territoryFileDataCache[fileId]); return; }
+  var url = APPS_SCRIPT_URL + (APPS_SCRIPT_URL.indexOf("?") === -1 ? "?" : "&") + "action=territory_data&fileId=" + encodeURIComponent(fileId) + "&token=" + encodeURIComponent(lastIdToken);
+  fetch(url).then(function(r) { return r.json(); }).then(function(json) {
+    territoryFileDataCache[fileId] = json;
+    callback(json);
+  }).catch(function() { callback(null); });
+}
+
+function territoryNavCardHtml(id, name, attr) {
+  return '<div class="card clickable territory-nav-card" '+attr+'="'+esc(id)+'">' +
+    '<div class="territory-nav-title">'+esc(name)+'</div>' +
+    '<div class="expand-hint">'+esc(t("territoryOpen"))+'</div>' +
+  '</div>';
+}
+
+function renderTerritoryFolderList(folders) {
+  var main = document.getElementById("main");
+  if (!folders.length) { main.innerHTML = '<div class="empty-state">'+esc(t("territoryNoAddresses"))+'</div>'; return; }
+  main.innerHTML = '<div class="grid">' + folders.map(function(f) {
+    return territoryNavCardHtml(f.id, f.name, "data-territory-folder");
+  }).join("") + '</div>';
+}
+
+function renderTerritoryFileList(files) {
+  var main = document.getElementById("main");
+  var backBtn = '<button class="link-btn" data-territory-back="folders">'+esc(t("territoryBack"))+'</button>';
+  if (!files.length) { main.innerHTML = backBtn + '<div class="empty-state">'+esc(t("territoryNoAddresses"))+'</div>'; return; }
+  main.innerHTML = backBtn + '<div class="grid" style="margin-top:12px;">' + files.map(function(f) {
+    return territoryNavCardHtml(f.id, f.name, "data-territory-file");
+  }).join("") + '</div>';
+}
+
+function renderTerritoryFileData(data) {
+  var main = document.getElementById("main");
+  var backBtn = '<button class="link-btn" data-territory-back="files">'+esc(t("territoryBack"))+'</button>';
+  if (!data || data.error) {
+    main.innerHTML = backBtn + '<div class="empty-state">⚠ ' + esc((data && data.error) || t("territoryUpdateFailed")) + '</div>';
+    return;
+  }
+  var months = data.months || [];
+  if (months.length) {
+    if (!state.territoryFileMonth || months.indexOf(state.territoryFileMonth) === -1) {
+      var curKey = currentMonthKey();
+      state.territoryFileMonth = months.indexOf(curKey) !== -1 ? curKey : months[months.length - 1];
+    }
+  }
+  var monthPicker = months.length ? ('<div class="month-tabs" style="margin:12px 0;">' + months.map(function(m) {
+    var active = state.territoryFileMonth === m;
+    return '<button class="month-btn'+(active?" active":"")+'" data-territory-file-month="'+m+'">'+esc(monthLabel(m))+'</button>';
+  }).join("") + '</div>') : '';
+  var cardsHtml = data.addresses.map(function(addr) {
+    return territoryCardHtml(addr, data.fileId, state.territoryFileMonth);
+  }).join("");
+  main.innerHTML = backBtn +
+    '<div class="territory-group-title" style="margin-top:12px;">'+esc(data.name)+'</div>' +
+    monthPicker +
+    '<div class="grid">' + (data.addresses.length === 0 ? '<div class="empty-state">'+esc(t("territoryNoAddresses"))+'</div>' : cardsHtml) + '</div>';
 }
 
 /* ---------- Text size toggle ---------- */
@@ -1218,22 +1307,7 @@ function renderMonthTabs() {
   }
   if (state.tab === "lifeMinistry") months = Object.keys(DATA.lifeMinistry || {}).sort();
 
-  if (state.tab === "territory") {
-    var monthSet = {};
-    (DATA.territories || []).forEach(function(terr) { (terr.months || []).forEach(function(m) { monthSet[m] = 1; }); });
-    var allTerrMonths = Object.keys(monthSet).sort();
-    if (!allTerrMonths.length) { el.classList.add("hidden"); el.innerHTML = ""; return; }
-    if (!state.territoryMonth || allTerrMonths.indexOf(state.territoryMonth) === -1) {
-      var curKey = currentMonthKey();
-      state.territoryMonth = allTerrMonths.indexOf(curKey) !== -1 ? curKey : allTerrMonths[allTerrMonths.length - 1];
-    }
-    el.classList.remove("hidden");
-    el.innerHTML = allTerrMonths.map(function(m) {
-      var active = state.territoryMonth === m;
-      return '<button class="month-btn'+(active?" active":"")+'" data-territory-month="'+m+'">'+esc(monthLabel(m))+'</button>';
-    }).join("");
-    return;
-  }
+  if (state.tab === "territory") { el.classList.add("hidden"); el.innerHTML = ""; return; }
 
   if (!months || !months.length) { el.classList.add("hidden"); el.innerHTML = ""; return; }
   if (!state.month || months.indexOf(state.month) === -1) state.month = months[0];
@@ -1260,22 +1334,27 @@ function renderMain() {
   }
 
   if (state.tab === "territory") {
-    var territories = DATA.territories || [];
-    var tMonth = state.territoryMonth;
-    var sectionsHtml = territories.map(function(terr) {
-      if (terr.error) {
-        return '<div class="territory-group"><div class="territory-group-title">'+esc(terr.name)+'</div>' +
-          '<div class="empty-state">⚠ ' + esc(terr.error) + '</div></div>';
-      }
-      var cardsHtml = terr.addresses.map(function(addr) {
-        return territoryCardHtml(addr, terr.fileId, tMonth);
-      }).join("");
-      return '<div class="territory-group">' +
-        '<div class="territory-group-title">'+esc(terr.name)+'</div>' +
-        '<div class="grid">' + (terr.addresses.length === 0 ? '<div class="empty-state">'+esc(t("territoryNoAddresses"))+'</div>' : cardsHtml) + '</div>' +
-      '</div>';
-    }).join("");
-    main.innerHTML = territories.length === 0 ? '<div class="empty-state">'+esc(t("territoryNoAddresses"))+'</div>' : sectionsHtml;
+    var myReqId = ++territoryRequestId;
+    main.innerHTML = '<div class="empty-state">' + esc(t("loading")) + '</div>';
+
+    if (!state.territoryFolderId) {
+      fetchTerritoryFolders(function(folders) {
+        if (myReqId !== territoryRequestId) return; // user navigated elsewhere before this returned
+        renderTerritoryFolderList(folders);
+      });
+      return;
+    }
+    if (!state.territoryFileId) {
+      fetchTerritoryFiles(state.territoryFolderId, function(files) {
+        if (myReqId !== territoryRequestId) return;
+        renderTerritoryFileList(files);
+      });
+      return;
+    }
+    fetchTerritoryFileData(state.territoryFileId, function(data) {
+      if (myReqId !== territoryRequestId) return;
+      renderTerritoryFileData(data);
+    });
     return;
   }
 
@@ -1485,8 +1564,37 @@ document.addEventListener("click", function(e) {
   var monthBtn = e.target.closest("[data-month]");
   if (monthBtn) { state.month = monthBtn.getAttribute("data-month"); renderMonthTabs(); renderMain(); return; }
 
-  var terrMonthBtn = e.target.closest("[data-territory-month]");
-  if (terrMonthBtn) { state.territoryMonth = terrMonthBtn.getAttribute("data-territory-month"); renderMonthTabs(); renderMain(); return; }
+  var terrFolderBtn = e.target.closest("[data-territory-folder]");
+  if (terrFolderBtn) {
+    state.territoryFolderId = terrFolderBtn.getAttribute("data-territory-folder");
+    state.territoryFileId = null;
+    renderMain();
+    return;
+  }
+
+  var terrFileBtn = e.target.closest("[data-territory-file]");
+  if (terrFileBtn) {
+    state.territoryFileId = terrFileBtn.getAttribute("data-territory-file");
+    state.territoryFileMonth = null;
+    renderMain();
+    return;
+  }
+
+  var terrBackBtn = e.target.closest("[data-territory-back]");
+  if (terrBackBtn) {
+    var backTo = terrBackBtn.getAttribute("data-territory-back");
+    if (backTo === "folders") state.territoryFolderId = null;
+    if (backTo === "files") { state.territoryFileId = null; state.territoryFileMonth = null; }
+    renderMain();
+    return;
+  }
+
+  var terrFileMonthBtn = e.target.closest("[data-territory-file-month]");
+  if (terrFileMonthBtn) {
+    state.territoryFileMonth = terrFileMonthBtn.getAttribute("data-territory-file-month");
+    renderMain();
+    return;
+  }
 
   var openBtn = e.target.closest("[data-open-item]");
   if (openBtn) {
