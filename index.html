@@ -208,21 +208,25 @@
 
   .territory-group { margin-bottom: 22px; }
   .territory-group-title { font-family: 'Fraunces', serif; font-weight: 600; font-size: calc(18px * var(--text-scale)); margin: 0 auto 10px; max-width: 1100px; color: var(--ink-strong); }
-  .territory-card { display: flex; flex-direction: column; gap: 4px; }
-  .territory-address { font-size: calc(14.5px * var(--text-scale)); font-weight: 600; color: var(--ink); }
-  .territory-meta { font-size: calc(12px * var(--text-scale)); color: var(--ink-muted); }
-  .territory-remarks { font-size: calc(11.5px * var(--text-scale)); color: var(--ink-faint); font-style: italic; }
-  .territory-mark-btn {
-    align-self: flex-end; margin-top: 8px; width: 44px; height: 44px; border-radius: 10px;
-    font-size: calc(20px * var(--text-scale)); font-weight: 700; border: 1px solid transparent;
-    display: flex; align-items: center; justify-content: center; transition: transform .1s ease;
-  }
-  .territory-mark-btn:active { transform: scale(0.92); }
-  .territory-mark-btn.mark-blank { color: var(--ink-faint); background: var(--chip-bg2); border-color: var(--border-strong); border-style: dashed; }
-  .territory-mark-btn.mark-circle { color: var(--sync-text); background: var(--sync-bg); }
-  .territory-mark-btn.mark-x { color: var(--danger-text); background: var(--danger-bg); }
-  .territory-mark-btn.mark-triangle { color: var(--cat-olive); background: var(--cat-olive-tint); }
-  .territory-mark-btn.mark-error { border-color: var(--danger-text); }
+  .territory-card-v2 { display: flex; flex-direction: column; gap: 3px; }
+  .territory-address { font-size: calc(15.5px * var(--text-scale)); font-weight: 700; color: var(--ink); }
+  .territory-meta { font-size: calc(12.5px * var(--text-scale)); color: var(--ink-muted); }
+  .territory-remarks { font-size: calc(12px * var(--text-scale)); color: var(--ink-faint); font-style: italic; }
+  .territory-divider { height: 2px; background: #D64545; margin: 12px 0; border-radius: 1px; }
+  .territory-current-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+  .territory-current-label { font-size: calc(13.5px * var(--text-scale)); font-weight: 700; color: var(--ink); }
+  .territory-mark-options { display: flex; gap: 6px; flex-wrap: wrap; }
+  .territory-mark-options.mark-error { animation: mark-shake .3s; }
+  @keyframes mark-shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-3px); } 75% { transform: translateX(3px); } }
+  .mark-opt-btn { min-width: 38px; height: 34px; padding: 0 10px; border-radius: 8px; border: 1px solid var(--border-strong); background: var(--surface); color: var(--ink-muted); font-size: calc(13px * var(--text-scale)); font-weight: 700; }
+  .mark-opt-btn.mark-blank.active { background: var(--chip-bg2); color: var(--ink); border-color: var(--border-strong); }
+  .mark-opt-btn.mark-circle.active { background: var(--sync-bg); color: var(--sync-text); border-color: var(--sync-text); }
+  .mark-opt-btn.mark-x.active { background: var(--danger-bg); color: var(--danger-text); border-color: var(--danger-text); }
+  .mark-opt-btn.mark-triangle.active { background: var(--cat-olive-tint); color: var(--cat-olive); border-color: var(--cat-olive); }
+  .mark-opt-btn:disabled { opacity: .6; }
+  .territory-history-title { font-size: calc(12.5px * var(--text-scale)); font-weight: 700; color: var(--ink-muted); margin-bottom: 6px; }
+  .territory-history-row { font-size: calc(12.5px * var(--text-scale)); color: var(--ink); padding: 2px 0; }
+  .territory-history-row.territory-history-empty { color: var(--ink-faint); font-style: italic; }
   .agenda { margin-top: 12px; border-top: 1px dashed var(--border-soft); padding-top: 10px; display: flex; flex-direction: column; gap: 6px; }
   .agenda-row, .agenda-section { display: flex; align-items: baseline; gap: 8px; font-size: calc(12.5px * var(--text-scale)); }
   .agenda-section { margin-top: 8px; }
@@ -525,6 +529,10 @@ var I18N = {
   territoryNoAddresses: { ne: "यो क्षेत्रमा कुनै ठेगाना भेटिएन।", ja: "この区域には住所が見つかりませんでした。" },
   loading: { ne: "लोड हुँदैछ...", ja: "読み込み中..." },
   territoryBack: { ne: "← फर्कनुहोस्", ja: "← 戻る" },
+  territoryCurrentMonth: { ne: "हालको महिना", en: "Current Month", ja: "今月" },
+  territoryClear: { ne: "खाली", en: "Clear", ja: "クリア" },
+  territoryHistory: { ne: "अघिल्लो भ्रमण इतिहास", en: "Last Visit History", ja: "訪問履歴" },
+  territoryNoHistory: { ne: "कुनै इतिहास भेटिएन।", ja: "記録はまだありません。" },
   territoryOpen: { ne: "खोल्नुहोस् ▸", ja: "開く ▸" },
 };
 
@@ -579,7 +587,7 @@ var NEPALI_MONTHS_EN = { "01":"January","02":"February","03":"March","04":"April
 var SECTION_HEADERS = { "बाइबलमा पाइने अनमोल धन":1, "कुराकानी गर्ने सीप तिखारौँ":1, "ख्रीष्टियन जीवन":1 };
 
 var state = { tab: "upcoming", month: null, query: "", expandedWeeks: {}, expandedFS: {}, openItem: null,
-  territoryFolderId: null, territoryFileId: null, territoryFileMonth: null };
+  territoryFolderId: null, territoryFileId: null, territoryFileYear: null };
 // Client-side caches so navigating back doesn't always re-fetch.
 var territoryFoldersCache = null;
 var territoryFilesCache = {}; // folderId -> [{id,name}]
@@ -957,15 +965,11 @@ function searchResultCardHtml(r, i) {
 }
 
 /* ============================================================
-   TERRITORY — tap-to-cycle marks (blank -> ○ -> × -> △ -> blank)
+   TERRITORY — direct O / X / △ / Clear buttons for the current
+   month, plus a year-filtered history list of past marks.
    ============================================================ */
 var MARK_CIRCLE = "○", MARK_X = "×", MARK_TRIANGLE = "△";
-var MARK_CYCLE_ORDER = ["", MARK_CIRCLE, MARK_X, MARK_TRIANGLE];
 
-function nextMarkInCycle(current) {
-  var idx = MARK_CYCLE_ORDER.indexOf(current || "");
-  return MARK_CYCLE_ORDER[(idx + 1) % MARK_CYCLE_ORDER.length];
-}
 function markClass(mark) {
   if (mark === MARK_CIRCLE) return "mark-circle";
   if (mark === MARK_X) return "mark-x";
@@ -973,52 +977,88 @@ function markClass(mark) {
   return "mark-blank";
 }
 
-function territoryCardHtml(addr, fileId, iso) {
-  var mark = (addr.marks && addr.marks[iso]) || "";
-  var display = mark || "−";
+function territoryCardHtmlV2(addr, fileId, currentIso, selectedYear) {
+  var currentMark = (addr.marks && addr.marks[currentIso]) || "";
   var metaBits = [addr.district, addr.congregation].filter(Boolean).join(" · ");
+
+  var options = [
+    { value: "", label: t("territoryClear") },
+    { value: MARK_CIRCLE, label: MARK_CIRCLE },
+    { value: MARK_X, label: MARK_X },
+    { value: MARK_TRIANGLE, label: MARK_TRIANGLE },
+  ];
+  var optionsHtml = options.map(function(opt) {
+    var isActive = currentMark === opt.value;
+    return '<button class="mark-opt-btn '+markClass(opt.value)+(isActive ? ' active' : '')+'" ' +
+      'data-mark-fileid="'+esc(fileId)+'" data-mark-row="'+addr.row+'" data-mark-iso="'+esc(currentIso)+'" data-mark-set="'+esc(opt.value)+'">' +
+      esc(opt.label) + '</button>';
+  }).join("");
+
+  var historyRows = [];
+  Object.keys(addr.marks || {}).forEach(function(iso) {
+    if (iso === currentIso) return; // already shown above, don't duplicate
+    if (iso.indexOf(selectedYear + "-") !== 0) return;
+    var mark = addr.marks[iso];
+    if (!mark) return;
+    historyRows.push({ iso: iso, mark: mark });
+  });
+  historyRows.sort(function(a, b) { return a.iso < b.iso ? -1 : 1; });
+  var historyHtml = historyRows.length
+    ? historyRows.map(function(h) {
+        return '<div class="territory-history-row">' + h.iso.split("-")[0] + ' ' + esc(monthNameOnly(h.iso)) + ': ' + esc(h.mark) + '</div>';
+      }).join("")
+    : '<div class="territory-history-row territory-history-empty">'+esc(t("territoryNoHistory"))+'</div>';
+
   return '' +
-    '<div class="card territory-card">' +
+    '<div class="card territory-card-v2">' +
       '<div class="territory-address">'+esc(addr.address)+'</div>' +
       (metaBits ? '<div class="territory-meta">'+esc(metaBits)+'</div>' : '') +
       (addr.remarks ? '<div class="territory-remarks">'+esc(addr.remarks)+'</div>' : '') +
-      '<button class="territory-mark-btn '+markClass(mark)+'" data-mark-fileid="'+esc(fileId)+'" data-mark-row="'+addr.row+'" data-mark-iso="'+esc(iso)+'" data-mark-current="'+esc(mark)+'">'+esc(display)+'</button>' +
+      '<div class="territory-divider"></div>' +
+      '<div class="territory-current-row">' +
+        '<span class="territory-current-label">'+esc(t("territoryCurrentMonth"))+'：'+esc(monthNameOnly(currentIso))+'</span>' +
+        '<div class="territory-mark-options">'+optionsHtml+'</div>' +
+      '</div>' +
+      '<div class="territory-divider"></div>' +
+      '<div class="territory-history">' +
+        '<div class="territory-history-title">'+esc(t("territoryHistory"))+'</div>' +
+        historyHtml +
+      '</div>' +
     '</div>';
 }
 
-function toggleTerritoryMark(btnEl) {
+function setTerritoryMarkDirect(btnEl) {
   var fileId = btnEl.getAttribute("data-mark-fileid");
   var row = parseInt(btnEl.getAttribute("data-mark-row"), 10);
   var iso = btnEl.getAttribute("data-mark-iso");
-  var current = btnEl.getAttribute("data-mark-current") || "";
-  var next = nextMarkInCycle(current);
+  var mark = btnEl.getAttribute("data-mark-set");
+  var group = btnEl.parentElement;
 
-  btnEl.textContent = next || "−";
-  btnEl.className = "territory-mark-btn " + markClass(next);
-  btnEl.setAttribute("data-mark-current", next);
-  btnEl.disabled = true;
+  Array.prototype.forEach.call(group.children, function(sib) {
+    sib.classList.toggle("active", sib === btnEl);
+    sib.disabled = true;
+  });
 
   fetch(APPS_SCRIPT_URL, {
     method: "POST",
-    body: JSON.stringify({ token: lastIdToken, type: "set_territory_mark", fileId: fileId, row: row, iso: iso, mark: next }),
+    body: JSON.stringify({ token: lastIdToken, type: "set_territory_mark", fileId: fileId, row: row, iso: iso, mark: mark }),
   })
     .then(function(res) { return res.json(); })
     .then(function(json) {
-      btnEl.disabled = false;
+      Array.prototype.forEach.call(group.children, function(sib) { sib.disabled = false; });
       if (!json || json.error) throw new Error(json && json.error);
       var cached = territoryFileDataCache[fileId];
       if (cached) {
-        cached.addresses.forEach(function(addr) {
-          if (addr.row === row) addr.marks[iso] = json.mark;
+        cached.addresses.forEach(function(a) {
+          if (a.row === row) a.marks[iso] = json.mark;
         });
       }
     })
     .catch(function() {
-      btnEl.disabled = false;
-      btnEl.textContent = current || "−";
-      btnEl.className = "territory-mark-btn " + markClass(current) + " mark-error";
-      btnEl.setAttribute("data-mark-current", current);
-      setTimeout(function() { btnEl.classList.remove("mark-error"); }, 1500);
+      Array.prototype.forEach.call(group.children, function(sib) { sib.disabled = false; });
+      group.classList.add("mark-error");
+      setTimeout(function() { group.classList.remove("mark-error"); }, 1500);
+      renderMain(); // re-render from (unchanged) cached data to visually revert
     });
 }
 
@@ -1074,6 +1114,11 @@ function renderTerritoryFileList(files) {
   }).join("") + '</div>';
 }
 
+function monthNameOnly(iso) {
+  var mm = iso.split("-")[1];
+  return NEPALI_MONTHS_EN[mm] || mm;
+}
+
 function renderTerritoryFileData(data) {
   var main = document.getElementById("main");
   var backBtn = '<button class="link-btn" data-territory-back="files">'+esc(t("territoryBack"))+'</button>';
@@ -1082,22 +1127,35 @@ function renderTerritoryFileData(data) {
     return;
   }
   var months = data.months || [];
-  if (months.length) {
-    if (!state.territoryFileMonth || months.indexOf(state.territoryFileMonth) === -1) {
-      var curKey = currentMonthKey();
-      state.territoryFileMonth = months.indexOf(curKey) !== -1 ? curKey : months[months.length - 1];
+  var years = [];
+  months.forEach(function(m) {
+    var y = m.split("-")[0];
+    if (years.indexOf(y) === -1) years.push(y);
+  });
+  years.sort().reverse(); // most recent year first
+
+  var curKey = currentMonthKey();
+  var currentIso = months.indexOf(curKey) !== -1 ? curKey : (months.length ? months[months.length - 1] : curKey);
+
+  if (years.length) {
+    if (!state.territoryFileYear || years.indexOf(state.territoryFileYear) === -1) {
+      var curYear = currentIso.split("-")[0];
+      state.territoryFileYear = years.indexOf(curYear) !== -1 ? curYear : years[0];
     }
   }
-  var monthPicker = months.length ? ('<div class="month-tabs" style="margin:12px 0;">' + months.map(function(m) {
-    var active = state.territoryFileMonth === m;
-    return '<button class="month-btn'+(active?" active":"")+'" data-territory-file-month="'+m+'">'+esc(monthLabel(m))+'</button>';
+
+  var yearTabs = years.length ? ('<div class="month-tabs" style="margin:12px 0;">' + years.map(function(y) {
+    var active = state.territoryFileYear === y;
+    return '<button class="month-btn'+(active?" active":"")+'" data-territory-file-year="'+y+'">'+esc(y)+'</button>';
   }).join("") + '</div>') : '';
+
   var cardsHtml = data.addresses.map(function(addr) {
-    return territoryCardHtml(addr, data.fileId, state.territoryFileMonth);
+    return territoryCardHtmlV2(addr, data.fileId, currentIso, state.territoryFileYear);
   }).join("");
+
   main.innerHTML = backBtn +
     '<div class="territory-group-title" style="margin-top:12px;">'+esc(data.name)+'</div>' +
-    monthPicker +
+    yearTabs +
     '<div class="grid">' + (data.addresses.length === 0 ? '<div class="empty-state">'+esc(t("territoryNoAddresses"))+'</div>' : cardsHtml) + '</div>';
 }
 
@@ -1575,7 +1633,7 @@ document.addEventListener("click", function(e) {
   var terrFileBtn = e.target.closest("[data-territory-file]");
   if (terrFileBtn) {
     state.territoryFileId = terrFileBtn.getAttribute("data-territory-file");
-    state.territoryFileMonth = null;
+    state.territoryFileYear = null;
     renderMain();
     return;
   }
@@ -1584,14 +1642,14 @@ document.addEventListener("click", function(e) {
   if (terrBackBtn) {
     var backTo = terrBackBtn.getAttribute("data-territory-back");
     if (backTo === "folders") state.territoryFolderId = null;
-    if (backTo === "files") { state.territoryFileId = null; state.territoryFileMonth = null; }
+    if (backTo === "files") { state.territoryFileId = null; state.territoryFileYear = null; }
     renderMain();
     return;
   }
 
-  var terrFileMonthBtn = e.target.closest("[data-territory-file-month]");
-  if (terrFileMonthBtn) {
-    state.territoryFileMonth = terrFileMonthBtn.getAttribute("data-territory-file-month");
+  var terrFileYearBtn = e.target.closest("[data-territory-file-year]");
+  if (terrFileYearBtn) {
+    state.territoryFileYear = terrFileYearBtn.getAttribute("data-territory-file-year");
     renderMain();
     return;
   }
@@ -1621,7 +1679,7 @@ document.addEventListener("click", function(e) {
 
   var markBtn = e.target.closest("[data-mark-fileid]");
   if (markBtn) {
-    toggleTerritoryMark(markBtn);
+    setTerritoryMarkDirect(markBtn);
     return;
   }
 
