@@ -28,9 +28,12 @@ firebase.initializeApp({
 const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage(function (payload) {
-  var title = (payload.notification && payload.notification.title) || "मण्डलीको कार्यक्रम";
+  // Reading from payload.data (not payload.notification) to match
+  // the data-only message format Code.gs now sends — see the comment
+  // there for why this is more reliable, especially on Safari/iOS.
+  var title = (payload.data && payload.data.title) || "मण्डलीको कार्यक्रम";
   var options = {
-    body: (payload.notification && payload.notification.body) || "",
+    body: (payload.data && payload.data.body) || "",
     icon: "icon-192.png",
     badge: "icon-192.png",
   };
