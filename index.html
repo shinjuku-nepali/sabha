@@ -347,6 +347,26 @@
     .lm-card .agenda-time { font-size: calc(14.4px * var(--text-scale)); }
     .lm-card .agenda-assignee { font-size: calc(15px * var(--text-scale)); }
   }
+
+  /* ---- Visual styles: A (chunky) / B (glass), switched via <html data-style> ---- */
+  html[data-style="chunky"] { --edge: #1F2A24; }
+  html[data-style="chunky"][data-theme="dark"] { --edge: #050806; }
+  [data-style="chunky"] .card, [data-style="chunky"] .tab-btn, [data-style="chunky"] .month-btn, [data-style="chunky"] .settings-toggle, [data-style="chunky"] .primary-btn, [data-style="chunky"] .rsvp-btn, [data-style="chunky"] .mark-opt-btn, [data-style="chunky"] .today-badge { border: 2px solid var(--edge); box-shadow: 0 5px 0 var(--edge); }
+  [data-style="chunky"] .card { border-radius: 20px; border-top-width: 4px; box-shadow: 0 6px 0 var(--edge); }
+  [data-style="chunky"] .next-banner { border-radius: 20px; box-shadow: 0 8px 0 var(--edge); }
+  [data-style="chunky"] .tab-btn:active, [data-style="chunky"] .month-btn:active, [data-style="chunky"] .rsvp-btn:active, [data-style="chunky"] .mark-opt-btn:active, [data-style="chunky"] .primary-btn:active, [data-style="chunky"] .settings-toggle:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--edge); }
+  [data-style="chunky"] .card.clickable:active { transform: translateY(3px); box-shadow: 0 3px 0 var(--edge); }
+
+  html[data-style="glass"] { --glass: rgba(255,255,255,.55); --glass-edge: rgba(255,255,255,.85); --glass-strong: rgba(255,255,255,.92); --surface: rgba(255,255,255,.6); --chip-bg2: rgba(255,255,255,.5); --card-border: rgba(255,255,255,.7); }
+  html[data-style="glass"][data-theme="dark"] { --glass: rgba(255,255,255,.1); --glass-edge: rgba(255,255,255,.3); --glass-strong: rgba(26,34,48,.94); --surface: rgba(255,255,255,.1); --chip-bg2: rgba(255,255,255,.12); --card-border: rgba(255,255,255,.2); }
+  html[data-style="glass"] body { min-height: 100vh; background: linear-gradient(160deg,#cfe7ee,#e2dcf6 55%,#f4e8da); }
+  html[data-style="glass"][data-theme="dark"] body { background: linear-gradient(160deg,#0f2420,#13202f 60%,#1a1636); }
+  [data-style="glass"] .card { background: var(--glass); border: 1px solid var(--glass-edge); border-top-width: 3px; border-radius: 24px; box-shadow: 0 16px 32px rgba(0,0,0,.16), inset 0 1px 0 rgba(255,255,255,.5); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+  [data-style="glass"] .territory-card-v2 { -webkit-backdrop-filter: none; backdrop-filter: none; }
+  [data-style="glass"] .next-banner { background: linear-gradient(135deg,rgba(255,255,255,.4),rgba(255,255,255,.12)); color: var(--ink); border: 1px solid var(--glass-edge); border-radius: 26px; box-shadow: 0 24px 44px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.6); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); transform: perspective(900px) rotateX(3deg); }
+  [data-style="glass"] .today-badge { background: var(--glass); color: var(--ink); border: 1px solid var(--glass-edge); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+  [data-style="glass"] .settings-panel, [data-style="glass"] .modal { background: var(--glass-strong); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); }
+  @media (prefers-reduced-transparency: reduce) { [data-style="glass"] .card, [data-style="glass"] .next-banner, [data-style="glass"] .today-badge { -webkit-backdrop-filter: none; backdrop-filter: none; background: var(--glass-strong); } }
 </style>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
@@ -379,6 +399,13 @@
               <button class="text-size-btn" id="textSizeDown" aria-label="Decrease text size" data-i18n-title="decreaseText" title="अक्षर सानो पार्नुहोस्">A</button>
               <span class="text-size-pct" id="textSizePct">100%</span>
               <button class="text-size-btn" id="textSizeUp" aria-label="Increase text size" data-i18n-title="increaseText" title="अक्षर ठूलो पार्नुहोस्">A</button>
+            </div>
+          </div>
+          <div class="settings-row">
+            <span class="settings-label" data-i18n="styleLabel">शैली</span>
+            <div class="lang-toggle" role="group" aria-label="Style">
+              <button class="lang-btn" id="styleChunky" data-i18n="styleChunky">चंकी</button>
+              <button class="lang-btn" id="styleGlass" data-i18n="styleGlass">ग्लास</button>
             </div>
           </div>
           <div class="settings-row">
@@ -469,6 +496,9 @@ var I18N = {
   decreaseText: { ne: "अक्षर सानो पार्नुहोस्", ja: "文字を小さくする" },
   increaseText: { ne: "अक्षर ठूलो पार्नुहोस्", ja: "文字を大きくする" },
   language: { ne: "भाषा", ja: "言語" },
+  styleLabel: { ne: "शैली", ja: "スタイル" },
+  styleChunky: { ne: "चंकी", ja: "ブロック" },
+  styleGlass: { ne: "ग्लास", ja: "ガラス" },
   liveDataGenerated: { ne: "✓ लाइभ डेटा · जेनेरेट गरिएको: ", ja: "✓ ライブデータ・生成日時: " },
   liveData: { ne: "✓ लाइभ डेटा", ja: "✓ ライブデータ" },
   someDataFailed: { ne: "⚠ केही डेटा लोड हुन सकेन: ", ja: "⚠ 一部のデータを読み込めませんでした: " },
@@ -1222,6 +1252,20 @@ var currentTheme = loadTheme(); // applied immediately, even before sign-in
 document.getElementById("themeToggle").addEventListener("click", function() {
   currentTheme = applyTheme(currentTheme === "dark" ? "light" : "dark");
 });
+
+/* ---------- Visual style (A chunky / B glass) ---------- */
+var STYLE_KEY = "programDashboardStyle";
+function applyStyle(style) {
+  document.documentElement.setAttribute("data-style", style);
+  try { localStorage.setItem(STYLE_KEY, style); } catch (_) {}
+  document.getElementById("styleChunky").classList.toggle("active", style === "chunky");
+  document.getElementById("styleGlass").classList.toggle("active", style === "glass");
+}
+var savedStyle = null;
+try { savedStyle = localStorage.getItem(STYLE_KEY); } catch (_) {}
+applyStyle(savedStyle === "glass" ? "glass" : "chunky");
+document.getElementById("styleChunky").addEventListener("click", function() { applyStyle("chunky"); });
+document.getElementById("styleGlass").addEventListener("click", function() { applyStyle("glass"); });
 
 /* ---------- Settings panel ---------- */
 document.getElementById("settingsToggle").addEventListener("click", function(e) {
