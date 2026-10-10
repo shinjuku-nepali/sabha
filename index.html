@@ -367,6 +367,20 @@
   [data-style="glass"] .today-badge { background: var(--glass); color: var(--ink); border: 1px solid var(--glass-edge); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
   [data-style="glass"] .settings-panel, [data-style="glass"] .modal { background: var(--glass-strong); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); }
   @media (prefers-reduced-transparency: reduce) { [data-style="glass"] .card, [data-style="glass"] .next-banner, [data-style="glass"] .today-badge { -webkit-backdrop-filter: none; backdrop-filter: none; background: var(--glass-strong); } }
+
+  /* ---- Sticky top bar (title + settings) ---- */
+  :root { --gl: max(16px, env(safe-area-inset-left)); --gr: max(16px, env(safe-area-inset-right)); --safe-top: max(20px, env(safe-area-inset-top)); }
+  @media (max-width: 480px) { :root { --gl: max(12px, env(safe-area-inset-left)); --gr: max(12px, env(safe-area-inset-right)); } }
+  .header-top-row {
+    position: sticky; top: 0; z-index: 50;
+    margin: calc(-1 * var(--safe-top)) calc(-1 * var(--gr)) 6px calc(-1 * var(--gl));
+    padding: calc(var(--safe-top) + 8px) calc(var(--gr) + max(0px, (100% - 1100px) / 2)) 8px calc(var(--gl) + max(0px, (100% - 1100px) / 2));
+    transition: background-color .2s ease, box-shadow .2s ease;
+  }
+  .header-top-row.stuck { background: var(--bg); box-shadow: 0 1px 0 var(--border-strong), 0 6px 14px var(--shadow-1); }
+  [data-style="chunky"] .header-top-row.stuck { border-bottom: 2px solid var(--edge); box-shadow: 0 4px 0 var(--edge); }
+  [data-style="glass"] .header-top-row.stuck { background: rgba(255,255,255,.72); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); box-shadow: 0 1px 0 var(--glass-edge), 0 8px 20px rgba(0,0,0,.12); }
+  html[data-style="glass"][data-theme="dark"] .header-top-row.stuck { background: rgba(22,30,44,.78); }
 </style>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
@@ -383,7 +397,7 @@
   </div>
 
   <div id="appRoot">
-  <header class="header">
+  
     <div class="header-top-row">
       <h1 data-i18n="appTitle">मण्डलीको कार्यक्रम</h1>
       <div style="position:relative;">
@@ -418,6 +432,7 @@
         </div>
       </div>
     </div>
+    <header class="header">
     <div class="today-badge">
       <div class="today-label" data-i18n="today">आज</div>
       <div class="today-date" id="todayDate"></div>
@@ -1266,6 +1281,14 @@ try { savedStyle = localStorage.getItem(STYLE_KEY); } catch (_) {}
 applyStyle(savedStyle === "glass" ? "glass" : "chunky");
 document.getElementById("styleChunky").addEventListener("click", function() { applyStyle("chunky"); });
 document.getElementById("styleGlass").addEventListener("click", function() { applyStyle("glass"); });
+
+/* ---------- Sticky top bar: show a background once the page scrolls ---------- */
+(function() {
+  var bar = document.querySelector(".header-top-row");
+  function updateBar() { bar.classList.toggle("stuck", window.scrollY > 4); }
+  window.addEventListener("scroll", updateBar, { passive: true });
+  updateBar();
+})();
 
 /* ---------- Settings panel ---------- */
 document.getElementById("settingsToggle").addEventListener("click", function(e) {
